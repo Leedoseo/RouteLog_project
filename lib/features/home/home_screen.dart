@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/features/home/widgets/widgets.dart';
 import 'package:routelog_project/features/record/record_screen.dart';
+import 'package:routelog_project/features/routes/routes_list_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -57,7 +58,7 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: QuickActionButton(
-                      label: "기록 시작", // 추후 record 화면으로 네비게이션 예정
+                      label: "기록 시작",
                       icon: Icons.play_arrow_rounded,
                       onTap: () {
                         Navigator.of(context).push(
@@ -71,7 +72,11 @@ class HomeScreen extends StatelessWidget {
                     child: QuickActionButton(
                       label: "내 루트",
                       icon: Icons.route_rounded,
-                      onTap: () => _notImplemented(context, "Routes List 연결 예정"),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const RoutesListScreen()),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(width: 8),
