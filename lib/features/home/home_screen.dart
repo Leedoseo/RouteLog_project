@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/features/home/widgets/widgets.dart';
+import 'package:routelog_project/features/record/record_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -58,7 +59,11 @@ class HomeScreen extends StatelessWidget {
                     child: QuickActionButton(
                       label: "기록 시작", // 추후 record 화면으로 네비게이션 예정
                       icon: Icons.play_arrow_rounded,
-                      onTap: () => _notImplemented(context, "Record 연결 예정"),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const RecordScreen()),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -106,7 +111,11 @@ class HomeScreen extends StatelessWidget {
 
       // FAB: 기록 시작 플로우 진입. 현재는 스낵바만 띄움.
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _notImplemented(context, "기록 시작 연결 예정"),
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const RecordScreen()),
+          );
+        },
         icon: const Icon(Icons.play_circle_fill_rounded),
         label: const Text("기록 시작"),
       ),
