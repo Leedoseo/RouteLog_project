@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:routelog_project/features/routes/route_detail_screen.dart';
 import 'package:routelog_project/features/routes/widgets/widgets.dart';
 
 class RoutesListScreen extends StatelessWidget {
@@ -50,7 +51,11 @@ class RoutesListScreen extends StatelessWidget {
                   title: title,
                   // 메타 텍스트는 목업, 나중에 거리/시간/태그로 대체
                   subtitle: "2025.09.03  -  --km  -  --m  -  #산책",
-                  onTap: () => _notImplemented(context, "상세 화면 연결 예정"),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const RouteDetailScreen()),
+                    );
+                  },
                   onMoreTap: () => _notImplemented(context, "더보기 액션 예정"),
                 );
               },
