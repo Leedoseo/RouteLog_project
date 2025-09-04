@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:routelog_project/features/routes/edit_note_sheet.dart';
 import 'package:routelog_project/features/routes/widgets/widgets.dart';
 
 class RouteDetailScreen extends StatelessWidget {
@@ -20,9 +21,12 @@ class RouteDetailScreen extends StatelessWidget {
         title: const Text("루트 상세"),
         actions: [
           IconButton(
-            tooltip: "편집(미구현)",
+            tooltip: '편집(미구현)',
             icon: const Icon(Icons.edit_outlined),
-            onPressed: () => _notImplemented(context, "편집 시트는 나중에 연결"),
+            onPressed: () => showEditNoteSheet(
+              context,
+              initialText: memo, // 기존 메모 넘기기(옵션)
+            ),
           ),
           IconButton(
             tooltip: "공유(미구현)",
@@ -88,7 +92,10 @@ class RouteDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
               child: MemoCard(
                 text: memo,
-                onEditTap: () => _notImplemented(context, "메모 편집은 나중에 연결")
+                onEditTap: () => showEditNoteSheet(
+                  context,
+                  initialText: memo,
+                ),
               ),
             ),
           ),
