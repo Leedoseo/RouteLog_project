@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:routelog_project/features/home/widgets/widgets.dart';
 import 'package:routelog_project/features/record/record_screen.dart';
 import 'package:routelog_project/features/routes/routes_list_screen.dart';
+import 'package:routelog_project/features/stats/stats_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -84,7 +85,11 @@ class HomeScreen extends StatelessWidget {
                     child: QuickActionButton(
                       label: "통계",
                       icon: Icons.insights_rounded,
-                      onTap: () => _notImplemented(context, "Stats 연결 예정"),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const StatsScreen()),
+                        );
+                      },
                     ),
                   ),
                 ],
