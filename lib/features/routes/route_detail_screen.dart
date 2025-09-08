@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/features/routes/edit_note_sheet.dart';
+import 'package:routelog_project/features/routes/route_actions_sheet.dart';
 import 'package:routelog_project/features/routes/widgets/widgets.dart';
 
 class RouteDetailScreen extends StatelessWidget {
@@ -32,6 +33,16 @@ class RouteDetailScreen extends StatelessWidget {
             tooltip: "공유(미구현)",
             icon: const Icon(Icons.ios_share_rounded),
             onPressed: () => _notImplemented(context, "공유는 나중에 연결"),
+          ),
+          IconButton(
+            tooltip: "더보기",
+            icon: const Icon(Icons.more_vert_rounded),
+            onPressed: () => showRouteActionsSheet(
+              context,
+              memoText: memo,
+              availableTags: const ["러닝", "산책", "퇴근길"],
+              selectedTags: const {"러닝", "퇴근길"},
+            ),
           ),
         ],
       ),
