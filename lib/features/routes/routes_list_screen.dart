@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/features/routes/route_detail_screen.dart';
+import 'package:routelog_project/features/search/search_screen.dart';
 import 'package:routelog_project/features/routes/widgets/widgets.dart';
 
 class RoutesListScreen extends StatelessWidget {
@@ -15,8 +16,12 @@ class RoutesListScreen extends StatelessWidget {
         actions: [
           IconButton(
             tooltip: "검색(미구현)",
-            icon: const Icon(Icons.search),
-            onPressed: () => _notImplemented(context, "검색은 나중에 연결"),
+            icon: const Icon(Icons.search_rounded),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SearchScreen()),
+              );
+            },
           ),
         ],
       ),

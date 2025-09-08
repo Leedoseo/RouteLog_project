@@ -3,6 +3,7 @@ import 'package:routelog_project/features/home/widgets/widgets.dart';
 import 'package:routelog_project/features/record/record_screen.dart';
 import 'package:routelog_project/features/routes/routes_list_screen.dart';
 import 'package:routelog_project/features/stats/stats_screen.dart';
+import 'package:routelog_project/features/search/search_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -14,11 +15,13 @@ class HomeScreen extends StatelessWidget {
         title: const Text("RouteLog"),
         actions: [
           IconButton(
+            tooltip: "검색",
+            icon: Icon(Icons.search_rounded),
             onPressed: () {
-              _notImplemented(context, "검색은 미구현");
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SearchScreen()),
+              );
             },
-            icon: const Icon(Icons.search),
-            tooltip: "검색 (미구현)",
           ),
         ],
       ),
