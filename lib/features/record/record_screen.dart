@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:routelog_project/features/record/record_finish_sheet.dart';
 import 'package:routelog_project/features/record/widgets/widgets.dart';
 
 class RecordScreen extends StatelessWidget {
@@ -38,7 +39,14 @@ class RecordScreen extends StatelessWidget {
               child: ControlBar(
                 onStart: () => _notImplemented(context, "기록 시작(미구현)"),
                 onPause: () => _notImplemented(context, "일시정지 (미구현)"),
-                onStop: () => _notImplemented(context, "종료/저장(미구현)"),
+                onStop: () async {
+                  await showRecordFinishSheet(
+                    context,
+                    distanceText: "5.20 km",
+                    durationText: "28:12",
+                    paceText: "5:25 /km",
+                  );
+                },
               ),
             ),
           ],
