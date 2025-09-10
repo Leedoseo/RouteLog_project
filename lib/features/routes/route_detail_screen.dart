@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/features/routes/edit_note_sheet.dart';
+import 'package:routelog_project/features/routes/photo_viewr_srceen.dart';
 import 'package:routelog_project/features/routes/route_actions_sheet.dart';
 import 'package:routelog_project/features/routes/widgets/widgets.dart';
 
@@ -89,7 +90,13 @@ class RouteDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: PhotoGrid(
                 count: 4, // 0~6에서 테스트
-                onTap: (i) => _notImplemented(context, "사진 뷰어는 나중에 연결"),
+                onTap: (i) {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => PhotoViewrScreen(count: 4, initialIndex: i),
+                    )
+                  );
+                }
               ),
             ),
           ),
