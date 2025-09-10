@@ -3,6 +3,7 @@ import 'package:routelog_project/features/routes/edit_note_sheet.dart';
 import 'package:routelog_project/features/routes/photo_viewr_srceen.dart';
 import 'package:routelog_project/features/routes/route_actions_sheet.dart';
 import 'package:routelog_project/features/routes/widgets/widgets.dart';
+import 'package:routelog_project/core/widgets/widgets.dart';
 
 class RouteDetailScreen extends StatelessWidget {
   const RouteDetailScreen({super.key});

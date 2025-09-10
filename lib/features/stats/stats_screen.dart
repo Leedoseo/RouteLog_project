@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/features/stats/widgets/widgets.dart';
+import 'package:routelog_project/core/widgets/widgets.dart';
 
 class StatsScreen extends StatelessWidget {
   const StatsScreen({super.key});

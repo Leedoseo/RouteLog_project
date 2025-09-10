@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:routelog_project/features/routes/route_detail_screen.dart';
 import 'package:routelog_project/features/search/search_screen.dart';
 import 'package:routelog_project/features/routes/widgets/widgets.dart';
+import 'package:routelog_project/core/widgets/widgets.dart';
 
 class RoutesListScreen extends StatelessWidget {
   const RoutesListScreen({super.key});
