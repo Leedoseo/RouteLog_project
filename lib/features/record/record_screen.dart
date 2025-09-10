@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/features/record/record_finish_sheet.dart';
 import 'package:routelog_project/features/record/widgets/widgets.dart';
-
+import 'package:routelog_project/core/widgets/widgets.dart';
 class RecordScreen extends StatelessWidget {
   const RecordScreen({super.key});
 
