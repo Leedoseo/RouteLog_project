@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/features/routes/route_actions_sheet.dart';
-import 'package:routelog_project/features/routes/widgets/widgets.dart';
-import 'package:routelog_project/core/widgets/widgets.dart';
+import 'package:routelog_project/features/routes/widgets/widgets.dart' show RouteListCard;
+import 'package:routelog_project/features/search/widgets/widgets.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
 
   @override
-  State<SearchScreen> createState() => _SearchScreenState();
+  State<SearchScreen> createState() => SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
+class SearchScreenState extends State<SearchScreen> {
   final TextEditingController _controller = TextEditingController();
 
   // 최근 검색 (간단 메모리 보관, 실제 앱에선 로컬 저장소 사용 예정
@@ -37,9 +37,8 @@ class _SearchScreenState extends State<SearchScreen> {
 
     setState(() {
       _keyword = k;
-      // 최근 검색 갱신(중복 제거 후 맨 앞에)
-      _recent.remove(k);
-      _recent.insert(0, k);
+      _recent.remove(k); // 중복 제거
+      _recent.insert(0, k); // 맨 앞에 추가
       if (_recent.length > 8) _recent.removeLast();
     });
 
@@ -54,7 +53,7 @@ class _SearchScreenState extends State<SearchScreen> {
     return Scaffold(
       appBar: AppBar(
         // AppBar 안에 직접 검색바 배치(타이틀 대신 TextField)
-        title: _SearchField(
+        title: SearchField(
           controller: _controller,
           onSubmitted: _performSearch, // 키보드 검색
         ),
@@ -122,7 +121,7 @@ class _SearchScreenState extends State<SearchScreen> {
           const SliverToBoxAdapter(child: SizedBox(height: 20)),
 
           // 추천 태그 섹션
-          const SliverToBoxAdapter(child: _SectionTitlePadding("추천 태그")),
+          const SliverToBoxAdapter(child: SectionTitlePadding('추천 태그')),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -153,7 +152,7 @@ class _SearchScreenState extends State<SearchScreen> {
           // 결과 섹션(목업)
           if (!hasKeyword)
             const SliverToBoxAdapter(
-              child: _SectionTitlePadding("결과"),
+              child: SectionTitlePadding("결과"),
             ),
           if (!hasKeyword)
             SliverToBoxAdapter(
@@ -166,7 +165,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
 
-          if (hasKeyword) const SliverToBoxAdapter(child: _SectionTitlePadding("결과")),
+          if (hasKeyword) const SliverToBoxAdapter(child: SectionTitlePadding("결과")),
 
           if (hasKeyword)
             SliverPadding(
@@ -189,63 +188,6 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-// AppBar에 들어가는 검색 입력 필드
-class _SearchField extends StatelessWidget {
-  final TextEditingController controller;
-  final ValueChanged<String> onSubmitted;
-
-  const _SearchField({
-    required this.controller,
-    required this.onSubmitted,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return TextField(
-      controller: controller,
-      autofocus: true,
-      textInputAction: TextInputAction.search,
-      onSubmitted: onSubmitted,
-      decoration: InputDecoration(
-        hintText: "루트 이름, 태그, 위치로 검색",
-        isDense: true,
-        filled: true,
-        fillColor: cs.surfaceContainerHighest,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: cs.outlineVariant),
-        ),
-        prefixIcon: const Icon(Icons.search_rounded),
-        suffixIcon: IconButton(
-          tooltip: "지우기",
-          icon: const Icon(Icons.close_rounded),
-          onPressed: () => controller.clear(),
-        ),
-      ),
-    );
-  }
-}
-
-class _SectionTitlePadding extends StatelessWidget {
-  final String text;
-  const _SectionTitlePadding(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w700,
-        ),
       ),
     );
   }
