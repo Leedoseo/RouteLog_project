@@ -4,6 +4,7 @@ import 'package:routelog_project/features/record/record_screen.dart';
 import 'package:routelog_project/features/routes/routes_list_screen.dart';
 import 'package:routelog_project/features/stats/stats_screen.dart';
 import 'package:routelog_project/features/search/search_screen.dart';
+import 'package:routelog_project/features/settings/settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -20,6 +21,15 @@ class HomeScreen extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const SearchScreen()),
+              );
+            },
+          ),
+          IconButton(
+            tooltip: "설정",
+            icon: const Icon(Icons.settings_rounded),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
               );
             },
           ),
