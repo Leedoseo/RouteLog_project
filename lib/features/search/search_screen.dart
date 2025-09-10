@@ -104,15 +104,16 @@ class SearchScreenState extends State<SearchScreen> {
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   for (final q in _recent)
-                    ActionChip(
-                      label: Text(q),
-                      onPressed: () {
+                    SearchHistoryChip(
+                      text: q,
+                      onTap: () {
                         _controller.text = q;
                         _controller.selection = TextSelection.fromPosition(
                           TextPosition(offset: q.length),
                         );
                         _performSearch(q);
                       },
+                      onDelete: () => setState(() => _recent.remove(q)),
                     ),
                 ],
               ),
