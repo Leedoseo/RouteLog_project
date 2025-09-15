@@ -84,16 +84,18 @@ class StatsScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
-                  MiniChartPlaceholder(
+                  WeeklyDistanceChart(
                     title: "주간 거리",
                     subtitle: "지난 주 대비 +12%",
-                    data: weeklyDistance,
+                    values: [0.3, 0.6, 0.2, 0.8, 0.5, 0.7, 0.4],
+                    labels: ['월','화','수','목','금','토','일'],
                   ),
                   const SizedBox(height: 12),
-                  MiniChartPlaceholder(
+                  WeeklyDistanceChart(
                     title: "주간 시간",
                     subtitle: "지난 주 대비 +8%",
-                    data: weeklyTime,
+                    values: [0.2, 0.4, 0.3, 0.7, 0.6, 0.8, 0.5],
+                    labels: ['월','화','수','목','금','토','일'],
                   ),
                 ],
               ),
