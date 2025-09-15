@@ -102,7 +102,11 @@ class _StatsScreenState extends State<StatsScreen> {
                 return TopRouteCard(
                   rank: rank,
                   title: "루트 $rank",
-                  subtitle: "5.$rank km - 2$rank:1$rank - 2025.09.0$rank",
+                  subtitle: "2025.09.0$rank",
+                  distanceText: "5.$rank km",
+                  durationText: "2$rank:1$rank",
+                  paceText: "5:0$rank/km",
+                  tags: const ["러닝", "야간"],
                   onTap: () => _notImplemented(context, "상세 연결은 나중에"),
                 );
               },
