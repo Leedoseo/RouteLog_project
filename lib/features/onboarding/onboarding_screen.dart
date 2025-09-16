@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:routelog_project/features/onboarding/pages/welcome_page.dart';
+import 'package:routelog_project/features/onboarding/pages/permissions_page.dart';
+import 'package:routelog_project/features/onboarding/widgets/widgets.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
