@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:routelog_project/features/onboarding/widgets/permission_card.dart';
 
 class PermissionPage extends StatelessWidget {
   const PermissionPage({super.key});
