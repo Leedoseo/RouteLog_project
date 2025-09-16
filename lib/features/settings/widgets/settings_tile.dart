@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 /// 공용 설정 타일 (아이콘 + 타이틀 + 서브타이틀 + 트레일링)
 /// 리스트 형태로 여러 개가 나열되는 기본 단위
-class SettignsTile extends StatelessWidget {
+class SettingsTile extends StatelessWidget {
   final IconData? leading;
   final String title;
   final String? subtitle;
   final Widget? trailing;
   final VoidCallback? onTap;
 
-  const SettignsTile({
+  const SettingsTile({
     super.key,
     required this.title,
     this.leading,

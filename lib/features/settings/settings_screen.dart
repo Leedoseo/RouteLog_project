@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:routelog_project/features/settings/widgets/widgets.dart';
 
 /// 설정 화면(카드 스타일 목업으로 변경)
 class SettingsScreen extends StatefulWidget {
@@ -116,7 +117,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
           /// 섹션1: 표시/단위
-          const SettingSectionTitle("표시 & 단위"),
+          const SettingsSectionTitle("표시 & 단위"),
           const SizedBox(height: 8),
 
           /// 다크 모드 스위치
@@ -141,7 +142,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _distanceUnit.toUpperCase(),
               style: Theme.of(context).textTheme.labelLarge,
             ),
-            onTap: _pickDistanceUnit(),
+            onTap: _pickDistanceUnit,
           ),
 
           const SizedBox(height: 24),
