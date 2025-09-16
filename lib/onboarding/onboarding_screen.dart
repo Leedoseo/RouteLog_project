@@ -58,7 +58,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 children: const [
                   WelcomePage(),
                   PermissionPage(),
-                  PreferencesPage(),
                 ],
               ),
             ),
