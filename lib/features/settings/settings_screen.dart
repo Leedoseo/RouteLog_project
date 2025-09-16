@@ -1,155 +1,198 @@
 import 'package:flutter/material.dart';
 
+/// 설정 화면(카드 스타일 목업으로 변경)
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  static const routeName = "/settings";
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-enum _Unit { km, mi }
-enum _ThemePref { system, light, dark }
-
 class _SettingsScreenState extends State<SettingsScreen> {
-  _ThemePref _theme = _ThemePref.system; // 현재 선택(목업 상태
-  _Unit _unit = _Unit.km;
+  // 목업용 로컬 상태
+  bool _darkMode = false;
+  String _distanceUnit = "km";
 
   void _snack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
+  Future<void> _pickDistanceUnit() async {
+    /// 간단 라디오 시트(목업)
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        String temp = _distanceUnit;
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  /// 시트 헤더
+                  Row(
+                    children: [
+                      Text(
+                        "거리 단위",
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        tooltip: "닫기",
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+
+                  /// 라디오 목록
+                  RadioListTile(
+                    value: "km",
+                    groupValue: temp,
+                    title: const Text("킬로미터 (km)"),
+                    onChanged: (v) => setModalState(() => temp = v!),
+                  ),
+                  RadioListTile<String>(
+                    value: "mi",
+                    groupValue: temp,
+                    title: const Text("마일 (mi)"),
+                    onChanged: (v) => setModalState(() => temp = v!),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // 하단 액션
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Text("취소"),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: () => Navigator.of(ctx).pop(temp),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Text("적용"),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (result != null && result != _distanceUnit) {
+      setState(() => _distanceUnit = result);
+      _snack("거리 단위 변경(목업): $_distanceUnit");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("설정"),
-      ),
+      appBar: AppBar(title: const Text("설정")),
       body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
-          // 섹션 : 표시/테마
-          const _SectionHeader("표시"),
-          RadioListTile<_ThemePref>(
-            title: const Text("시스템 설정 따름"),
-            subtitle: const Text("디바이스 밝기/다크 설정을 사용"),
-            value: _ThemePref.system,
-            groupValue: _theme,
-            onChanged: (v) {
-              if (v == null) return;
-              setState(() => _theme = v);
-              _snack("테마 적용은 나중에 연결");
-            },
-          ),
-          RadioListTile<_ThemePref>(
-            title: const Text("라이트 모드"),
-            value: _ThemePref.light,
-            groupValue: _theme,
-            onChanged: (v) {
-              if (v == null) return;
-              setState(() => _theme = v);
-              _snack("테마 적용은 나중에 연결");
-            },
-          ),
-          RadioListTile<_ThemePref>(
-            title: const Text("다크 모드"),
-            value: _ThemePref.dark,
-            groupValue: _theme,
-            onChanged: (v) {
-              if (v == null) return;
-              setState(() => _theme = v);
-              _snack("테마 적용은 나중에 연결");
-            },
-          ),
-          const Divider(height: 1),
+          /// 섹션1: 표시/단위
+          const SettingSectionTitle("표시 & 단위"),
+          const SizedBox(height: 8),
 
-          // 섹션 : 단위
-          const _SectionHeader("단위"),
-          RadioListTile<_Unit>(
-            title: const Text("킬로미터 (km)"),
-            value: _Unit.km,
-            groupValue: _unit,
+          /// 다크 모드 스위치
+          SettingsSwitchTile(
+            leading: Icons.dark_mode_rounded,
+            title: "다크 모드",
+            subtitle: "시스템 테마와 별도로 앱 테마를 지정합니다",
+            value: _darkMode,
             onChanged: (v) {
-              if (v == null) return;
-              setState(() => _unit = v);
-              _snack("단위 저장은 나중에 연결");
+              setState(() => _darkMode = v);
+              _snack("다크 모드 토글(목업): $v");
             },
           ),
-          RadioListTile<_Unit>(
-            title: const Text("마일 (mi)"),
-            value: _Unit.mi,
-            groupValue: _unit,
-            onChanged: (v) {
-              if (v == null) return;
-              setState(() => _unit = v);
-              _snack("단위 저장은 나중에 연결");
-            },
-          ),
-          const Divider(height: 1),
+          const SizedBox(height: 8),
 
-          // 섹션: 데이터 & 백업
-          const _SectionHeader("데이터 & 백업"),
-          ListTile(
-            leading: const Icon(Icons.file_upload_outlined),
-            title: const Text("GPX 내보내기"),
-            subtitle: const Text("선택한 루트를 GPX 파일로 저장"),
+          /// 거리 단위 선택
+          SettingsTile(
+            leading: Icons.straighten_rounded,
+            title: "거리 단위",
+            subtitle: "러닝/루트의 거리 표기 단위",
+            trailing: Text(
+              _distanceUnit.toUpperCase(),
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+            onTap: _pickDistanceUnit(),
+          ),
+
+          const SizedBox(height: 24),
+
+          /// 섹션 2: 백업/내보내기
+          const SettingsSectionTitle("백업 & 내보내기"),
+          const SizedBox(height: 8),
+
+          SettingsTile(
+            leading: Icons.ios_share_rounded,
+            title: "데이터 내보내기",
+            subtitle: "GPX/JSON으로 내보내기 (미구현)",
             onTap: () => _snack("내보내기는 나중에 연결"),
           ),
-          ListTile(
-            leading: const Icon(Icons.backup_outlined),
-            title: const Text("백업 만들기"),
-            subtitle: const Text("기록/설정을 로컬 백업"),
-            onTap: () => _snack("백업은 나중에 연결"),
-          ),
-          ListTile(
-            leading: const Icon(Icons.settings_backup_restore_rounded),
-            title: const Text("백업에서 복원"),
-            subtitle: const Text("기록/설정을 복원"),
-            onTap: () => _snack("복원은 나중에 연결"),
-          ),
-          const Divider(height: 1),
+          const SizedBox(height: 8),
 
-          const _SectionHeader("정보"),
-          ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: const Text("버전"),
-            subtitle: const Text("RouteLog 0.1.0 (mock)"),
-            onTap: () => _snack("자세한 정보는 나중에 연결"),
+          SettingsTile(
+            leading: Icons.file_download_rounded,
+            title: "데이터 가져오기",
+            subtitle: "GPX/JSON으로 가져오기 (미구현)",
+            onTap: () => _snack("가져오기는 나중에 연결"),
           ),
-          AboutListTile(
-            icon: const Icon(Icons.description_outlined),
-            applicationName: "RouteLog",
-            applicationVersion: "0.1.0(mock)",
-            applicationLegalese: "2025 RouteLog Project",
-            aboutBoxChildren: const [
-              SizedBox(height: 12),
-              Text("오픈소스 라이선스는 추후 추가 예정"),
-            ],
-          ),
-
-          // 하단 여백
           const SizedBox(height: 24),
+
+          /// 섹션 3: 정보
+          const SettingsSectionTitle("정보"),
+          const SizedBox(height: 8),
+
+          SettingsTile(
+            leading: Icons.info_outline_rounded,
+            title: "버전 정보",
+            subtitle: "RouteLog 0.1.0 (mock)",
+            onTap: () => _snack("버전 정보는 나중에 연결"),
+          ),
+          const SizedBox(height: 8),
+
+          SettingsTile(
+            leading: Icons.description_outlined,
+            title: "오픈소스 라이선스",
+            subtitle: "사용한 라이브러리 목록 (미구현)",
+            onTap: () => _snack("라이선스 화면은 나중에 연결"),
+          ),
+          const SizedBox(height: 8),
+
+          SettingsTile(
+            leading: Icons.privacy_tip_outlined,
+            title: "약관 및 개인정보처리방침",
+            subtitle: "문서 보기 (미구현)",
+            onTap: () => _snack("문서 화면은 나중에 연결"),
+          ),
         ],
-      ),
-    );
-  }
-}
-
-// 작은 섹션 헤더 텍스트
-class _SectionHeader extends StatelessWidget {
-  final String text;
-  const _SectionHeader(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          fontWeight: FontWeight.w700,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
       ),
     );
   }
