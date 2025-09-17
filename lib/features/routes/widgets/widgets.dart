@@ -6,3 +6,4 @@ export 'meta_row.dart';
 export 'tag_chip.dart';
 export 'photo_grid.dart';
 export 'memo_card.dart';
+export 'filter_section_title.dart';
