@@ -1,40 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:routelog_project/features/routes/widgets/tag_selector.dart';
 import 'package:routelog_project/features/routes/widgets/filter_section_title.dart';
-import 'package:routelog_project/features/routes/widgets/select_chip.dart';
 
 /// 루트 목록 필터/정렬 바텀시트 (UI 목업)
 /// - 실제 값 저장/적용은 아직 미구현: 스낵바로만 안내
 Future<void> showRouteFilterSheet(
     BuildContext context, {
-      String? initialSort,               // 예: "latest" | "distance" | "duration" | "name"
-      Set<String>? initialSelectedTags,  // 예: {"러닝", "주말"}
-      String? initialQuickRange,         // 예: "thisMonth" | "thisWeek" | "all"
+      String? initialQuickRange, // "thisWeek" | "thisMonth" | "all"
     }) {
   return showModalBottomSheet(
     context: context,
-    isScrollControlled: true,
     useSafeArea: true,
+    isScrollControlled: true,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (sheetCtx) {
-      String sort = initialSort ?? "latest";
-      String quickRange = initialQuickRange ?? "all";
-      final Set<String> selectedTags = {...(initialSelectedTags ?? {})};
+      String quick = initialQuickRange ?? "all";
 
-      // 목업용 태그 목록
-      final tags = const ["러닝", "산책", "주말", "아침", "야간", "강변", "오르막", "내리막"];
-
-      void snack(String msg) =>
-          ScaffoldMessenger.of(sheetCtx).showSnackBar(SnackBar(content: Text(msg)));
+      void snack(String m) =>
+          ScaffoldMessenger.of(sheetCtx).showSnackBar(SnackBar(content: Text(m)));
 
       return StatefulBuilder(
-        builder: (ctx, setModalState) {
+        builder: (ctx, setState) {
+          final cs = Theme.of(ctx).colorScheme;
+          final bottom = MediaQuery.of(ctx).viewInsets.bottom;
+
+          Widget quickChip(String value, String label) {
+            final selected = quick == value;
+            return ChoiceChip(
+              label: Text(label),
+              selected: selected,
+              onSelected: (_) => setState(() => quick = value),
+              selectedColor: cs.primaryContainer,
+              side: BorderSide(color: cs.outlineVariant),
+              showCheckmark: false,
+            );
+          }
+
           return Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(ctx).viewInsets.bottom,
-            ),
+            padding: EdgeInsets.only(bottom: bottom),
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               child: Column(
@@ -44,7 +48,7 @@ Future<void> showRouteFilterSheet(
                   Row(
                     children: [
                       Text(
-                        "필터 / 정렬",
+                        "필터",
                         style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -57,76 +61,36 @@ Future<void> showRouteFilterSheet(
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 8),
 
-                  // 정렬 섹션
-                  const FilterSectionTitle("정렬"),
-                  RadioListTile<String>(
-                    value: "latest",
-                    groupValue: sort,
-                    title: const Text("최신순"),
-                    onChanged: (v) => setModalState(() => sort = v!),
-                  ),
-                  RadioListTile<String>(
-                    value: "distance",
-                    groupValue: sort,
-                    title: const Text("거리순"),
-                    onChanged: (v) => setModalState(() => sort = v!),
-                  ),
-                  RadioListTile<String>(
-                    value: "duration",
-                    groupValue: sort,
-                    title: const Text("시간순"),
-                    onChanged: (v) => setModalState(() => sort = v!),
-                  ),
-                  RadioListTile<String>(
-                    value: "name",
-                    groupValue: sort,
-                    title: const Text("이름순"),
-                    onChanged: (v) => setModalState(() => sort = v!),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // 날짜 퀵 필터(목업): 이번 주/이번 달/전체
+                  // 섹션: 기간(빠른 선택)
                   const FilterSectionTitle("기간"),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      SelectChip(
-                        label: "이번 주",
-                        selected: quickRange == "thisWeek",
-                        onSelected: () => setModalState(() => quickRange = "thisWeek"),
-                      ),
-                      SelectChip(
-                        label: "이번 달",
-                        selected: quickRange == "thisMonth",
-                        onSelected: () => setModalState(() => quickRange = "thisMonth"),
-                      ),
-                      SelectChip(
-                        label: "전체",
-                        selected: quickRange == "all",
-                        onSelected: () => setModalState(() => quickRange = "all"),
-                      ),
+                      quickChip("thisWeek", "이번 주"),
+                      quickChip("thisMonth", "이번 달"),
+                      quickChip("all", "전체"),
                     ],
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
 
-                  // 태그 선택
-                  const FilterSectionTitle("태그"),
-                  TagSelector(
-                    tags: tags,
-                    selected: selectedTags,
-                    onToggle: (t) {
-                      setModalState(() {
-                        selectedTags.contains(t)
-                            ? selectedTags.remove(t)
-                            : selectedTags.add(t);
-                      });
-                    },
+                  // (옵션) 추가 필터 섹션들 — 지금은 목업용 자리만
+                  const FilterSectionTitle("추가 필터"),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: cs.outlineVariant),
+                    ),
+                    child: Text(
+                      "거리 범위, 페이스, 시간대 등의 필터는 나중에 추가",
+                      style: Theme.of(ctx).textTheme.bodySmall,
+                    ),
                   ),
 
                   const SizedBox(height: 16),
@@ -137,11 +101,8 @@ Future<void> showRouteFilterSheet(
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () {
-                            setModalState(() {
-                              sort = "latest";
-                              quickRange = "all";
-                              selectedTags.clear();
-                            });
+                            // 초기화: 전체
+                            setState(() => quick = "all");
                           },
                           child: const Padding(
                             padding: EdgeInsets.symmetric(vertical: 12),
@@ -153,7 +114,7 @@ Future<void> showRouteFilterSheet(
                       Expanded(
                         child: FilledButton(
                           onPressed: () {
-                            snack("적용은 나중에 연결 (정렬:$sort, 기간:$quickRange, 태그:${selectedTags.join(', ')})");
+                            snack("필터 적용(목업): quick=$quick");
                             Navigator.of(ctx).pop();
                           },
                           child: const Padding(
