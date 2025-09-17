@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/features/routes/widgets/tag_selector.dart';
 import 'package:routelog_project/features/routes/widgets/filter_section_title.dart';
-// import 'package:routelog_project/features/routes/widgets/select_chip.dart'; 추후 추가 예정
+import 'package:routelog_project/features/routes/widgets/select_chip.dart';
 
 /// 루트 목록 필터/정렬 바텀시트 (UI 목업)
 /// - 실제 값 저장/적용은 아직 미구현: 스낵바로만 안내
