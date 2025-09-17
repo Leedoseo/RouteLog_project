@@ -4,3 +4,5 @@ export 'control_bar.dart';
 export 'record_status_badge.dart';
 export 'status_banner.dart';
 export 'record_hud.dart';
+export 'auto_pause_dialog.dart';
+export 'record_finish_screen.dart';
