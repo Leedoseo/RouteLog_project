@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:routelog_project/features/routes/route_detail_screen.dart';
 import 'package:routelog_project/features/search/search_screen.dart';
 import 'package:routelog_project/features/routes/widgets/widgets.dart';
+import 'package:routelog_project/features/routes/route_sort_sheet.dart';
+import 'package:routelog_project/features/routes/route_filter_sheet.dart';
+import 'package:routelog_project/features/routes/route_tag_sheet.dart';
 import 'package:routelog_project/core/widgets/widgets.dart';
 
 class RoutesListScreen extends StatelessWidget {
@@ -33,9 +36,9 @@ class RoutesListScreen extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: RoutesFilterBar(
-                onSortTap: () => _notImplemented(context, "정렬 바텀시트 예정"),
-                onFilterTap: () => _notImplemented(context, "필터 바텀시트 예정"),
-                onTagTap: () => _notImplemented(context, "태그 선택 예정"),
+                onSortTap: () => showRouteSortSheet(context, initialSort: "latest"),
+                onFilterTap: () => showRouteFilterSheet(context),
+                onTagTap: () => showRouteTagSheet(context),
               ),
             ),
           ),
