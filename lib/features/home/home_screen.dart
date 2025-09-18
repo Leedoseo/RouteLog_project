@@ -40,7 +40,7 @@ class HomeScreen extends StatelessWidget {
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
@@ -112,7 +112,12 @@ class HomeScreen extends StatelessWidget {
           const SliverToBoxAdapter(child: SizedBox(height: 20)),
 
           // 최근 루트 섹션 타이틀
-          const SliverToBoxAdapter(child: SectionTitlePadding('최근 루트')),
+          const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: SectionTitlePadding("최근 루트"),
+              ),
+          ),
 
           // 최근 루트 리스트 : RouteCard 3개 고정 목업. 실제 데이터 연결은 나중에.
           SliverPadding(
