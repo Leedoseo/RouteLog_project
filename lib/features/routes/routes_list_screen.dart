@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:routelog_project/features/routes/route_actions_sheet.dart';
 import 'package:routelog_project/features/routes/route_detail_screen.dart';
 import 'package:routelog_project/features/search/search_screen.dart';
 import 'package:routelog_project/features/routes/widgets/widgets.dart';
 import 'package:routelog_project/features/routes/route_sort_sheet.dart';
 import 'package:routelog_project/features/routes/route_filter_sheet.dart';
 import 'package:routelog_project/features/routes/route_tag_sheet.dart';
+import 'package:routelog_project/features/routes/route_add_sheet.dart';
 import 'package:routelog_project/core/widgets/widgets.dart';
 
 class RoutesListScreen extends StatelessWidget {
@@ -27,6 +29,11 @@ class RoutesListScreen extends StatelessWidget {
               );
             },
           ),
+          IconButton(
+            tooltip: "추가",
+            icon: const Icon(Icons.add_rounded),
+            onPressed: () => showRouteAddSheet(context),
+          ),
         ],
       ),
       body: CustomScrollView(
@@ -42,6 +49,8 @@ class RoutesListScreen extends StatelessWidget {
               ),
             ),
           ),
+
+          // 필터 요약 바
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -81,7 +90,7 @@ class RoutesListScreen extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => const RouteDetailScreen()),
                     );
                   },
-                  onMoreTap: () => _notImplemented(context, "더보기 액션 예정"),
+                  onMoreTap: () => showRouteActionsSheet(context),
                 );
               },
             ),
