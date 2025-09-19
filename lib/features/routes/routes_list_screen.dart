@@ -42,6 +42,22 @@ class RoutesListScreen extends StatelessWidget {
               ),
             ),
           ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: AppliedFiltersBar(
+                tags: const ["러닝", "퇴근길"],       // 적용된 태그(예시)
+                distanceLabel: "0–5km",             // 거리 필터 요약(예시)
+                durationLabel: "<30m",               // 시간 필터 요약(예시)
+                sortLabel: "최신 순",                // 정렬 요약(예시)
+                onClearTag: (t) => _notImplemented(context, "태그 제거: $t"),
+                onClearDistance: () => _notImplemented(context, "거리 해제"),
+                onClearDuration: () => _notImplemented(context, "시간 해제"),
+                onClearSort: () => _notImplemented(context, "정렬 해제"),
+                onClearAll: () => _notImplemented(context, "모두 지우기"),
+              ),
+            ),
+          ),
 
           // 리스트 섹션 타이틀
           const SliverToBoxAdapter(
