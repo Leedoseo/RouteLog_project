@@ -3,6 +3,12 @@ import 'package:flutter/material.dart';
 /// Skeleton(로딩 플레이스홀더) 공용 위젯들
 /// - 외부 패키지 없이 간단한 Shimmer 효과 제공
 /// - 리스트/슬리버 모두 지원
+///
+/// 사용 예:
+///   // 타일형 + 높이 직접 지정
+///   const SliverSkeletonList(itemCount: 10, itemHeight: 88);
+///   // 카드형
+///   const SliverSkeletonList.card(itemCount: 6);
 
 /// 리스트 형태의 스켈레톤 (일반 위젯 트리용)
 class SkeletonList extends StatelessWidget {
@@ -11,6 +17,7 @@ class SkeletonList extends StatelessWidget {
   final double spacing;
   final bool showTrailing; // 우측 작은 네모
   final bool dense;        // 간격/사이즈를 조금 줄인 버전
+  final double? itemHeight; // 각 아이템 높이(타일 모드에서만 사용)
 
   const SkeletonList({
     super.key,
@@ -19,6 +26,7 @@ class SkeletonList extends StatelessWidget {
     this.spacing = 12,
     this.showTrailing = true,
     this.dense = false,
+    this.itemHeight,
   });
 
   /// 큰 썸네일 카드 형태
@@ -28,9 +36,10 @@ class SkeletonList extends StatelessWidget {
     this.padding = const EdgeInsets.fromLTRB(16, 12, 16, 16),
     this.spacing = 12,
   })  : showTrailing = false,
-        dense = false;
+        dense = false,
+        itemHeight = null;
 
-  bool get _isCardMode => showTrailing == false && dense == false;
+  bool get _isCardMode => showTrailing == false && dense == false && itemHeight == null;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +64,11 @@ class SkeletonList extends StatelessWidget {
       child: Column(
         children: [
           for (int i = 0; i < itemCount; i++) ...[
-            _SkeletonTile(showTrailing: showTrailing, dense: dense),
+            _SkeletonTile(
+              showTrailing: showTrailing,
+              dense: dense,
+              tileHeight: itemHeight,
+            ),
             if (i != itemCount - 1) SizedBox(height: spacing),
           ],
         ],
@@ -72,6 +85,7 @@ class SliverSkeletonList extends StatelessWidget {
   final bool cardMode;     // true면 큰 카드 형태
   final bool showTrailing; // 리스트 타일 모드에서만 유효
   final bool dense;
+  final double? itemHeight; // 각 아이템 높이(타일 모드에서만 사용)
 
   const SliverSkeletonList({
     super.key,
@@ -81,6 +95,7 @@ class SliverSkeletonList extends StatelessWidget {
     this.cardMode = false,
     this.showTrailing = true,
     this.dense = false,
+    this.itemHeight,
   });
 
   /// 카드 전용 팩토리
@@ -91,7 +106,8 @@ class SliverSkeletonList extends StatelessWidget {
     this.spacing = 12,
   })  : cardMode = true,
         showTrailing = false,
-        dense = false;
+        dense = false,
+        itemHeight = null;
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +130,7 @@ class SliverSkeletonList extends StatelessWidget {
         itemBuilder: (_, __) => _SkeletonTile(
           showTrailing: showTrailing,
           dense: dense,
+          tileHeight: itemHeight,
         ),
       ),
     );
@@ -124,66 +141,74 @@ class SliverSkeletonList extends StatelessWidget {
 class _SkeletonTile extends StatelessWidget {
   final bool showTrailing;
   final bool dense;
+  final double? tileHeight; // 아이템 높이
 
   const _SkeletonTile({
     required this.showTrailing,
     required this.dense,
+    this.tileHeight,
   });
 
   @override
   Widget build(BuildContext context) {
-    final leadingSize = dense ? 40.0 : 48.0;
-    final lineHeight1 = dense ? 10.0 : 12.0;
-    final lineHeight2 = dense ? 8.0 : 10.0;
+    // 기본 높이(밀도에 따라)
+    final h = tileHeight ?? (dense ? 56.0 : 72.0);
+    final leadingSize = h * 0.6;      // 원형 아이콘 크기
+    final lineHeight1 = (h * 0.18).clamp(8.0, 16.0);
+    final lineHeight2 = (h * 0.14).clamp(6.0, 14.0);
 
-    return Row(
-      children: [
-        // Leading (원형)
-        _Shimmer(
-          child: Container(
-            width: leadingSize,
-            height: leadingSize,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(999),
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        // 텍스트 라인
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _Shimmer(
-                child: Container(
-                  height: lineHeight1,
-                  width: MediaQuery.of(context).size.width * 0.5,
-                  decoration: _boxDecoration(context),
-                ),
-              ),
-              const SizedBox(height: 8),
-              _Shimmer(
-                child: Container(
-                  height: lineHeight2,
-                  width: MediaQuery.of(context).size.width * 0.35,
-                  decoration: _boxDecoration(context),
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (showTrailing) ...[
-          const SizedBox(width: 12),
+    return SizedBox(
+      height: h,
+      child: Row(
+        children: [
+          // Leading (원형)
           _Shimmer(
             child: Container(
-              width: 20,
-              height: 20,
-              decoration: _boxDecoration(context, radius: 6),
+              width: leadingSize,
+              height: leadingSize,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(999),
+              ),
             ),
           ),
+          const SizedBox(width: 12),
+          // 텍스트 라인
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center, // 세로 가운데 정렬
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _Shimmer(
+                  child: Container(
+                    height: lineHeight1,
+                    width: MediaQuery.of(context).size.width * 0.5,
+                    decoration: _boxDecoration(context),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _Shimmer(
+                  child: Container(
+                    height: lineHeight2,
+                    width: MediaQuery.of(context).size.width * 0.35,
+                    decoration: _boxDecoration(context),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (showTrailing) ...[
+            const SizedBox(width: 12),
+            _Shimmer(
+              child: Container(
+                width: 20,
+                height: 20,
+                decoration: _boxDecoration(context, radius: 6),
+              ),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
@@ -311,6 +336,7 @@ BoxDecoration _boxDecoration(BuildContext context, {double radius = 8}) {
 class GradientTranslation extends GradientTransform {
   final double dx;
   const GradientTranslation(this.dx);
+
   @override
   Matrix4 transform(Rect bounds, {TextDirection? textDirection}) {
     return Matrix4.identity()..translate(dx);
