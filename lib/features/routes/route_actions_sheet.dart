@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/features/routes/edit_note_sheet.dart';
+import 'package:routelog_project/features/routes/route_export_sheet.dart';
 
-// Route 액션 시트
+/// Route 액션 시트
+/// - 공유/GPX를 하나의 "내보내기"로 통합 -> `showRouteExportSheet` 호출
+/// - 메모/태그 편집 시 `showEditNoteSheet`
+/// - 삭제는 확인 다이얼로그 후 스낵바(목업)
 Future<void> showRouteActionsSheet(
     BuildContext context, {
-      String? memoText,
-      List<String>? availableTags,
-      Set<String>? selectedTags,
+      String? routeTitle,                 // 내보내기 시트 헤더에 표기하고 싶을 때 옵션
+      String? memoText,                   // 편집 시 초기 메모
+      List<String>? availableTags,        // 편집 시 선택 가능한 태그
+      Set<String>? selectedTags,          // 편집 시 처음 선택된 태그
     }) {
   void _snack(String msg) =>
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
@@ -66,38 +71,32 @@ Future<void> showRouteActionsSheet(
           ),
           const Divider(height: 1),
 
-          // 공유
+          // 내보내기 (공유/GPX 통합)
           ListTile(
             leading: const Icon(Icons.ios_share_rounded),
-            title: const Text('공유하기'),
+            title: const Text('내보내기'),
             onTap: () {
+              // 현재 시트 닫고, 바깥 context로 Export 시트 띄우기
               Navigator.of(sheetCtx).pop();
-              _snack('공유는 나중에 연결');
+              Future.microtask(() => showRouteExportSheet(
+                context,
+                routeTitle: routeTitle,
+              ));
             },
           ),
 
-          // 편집 (메모+태그 시트)
+          // 편집 (메모+태그)
           ListTile(
             leading: const Icon(Icons.edit_outlined),
             title: const Text('편집하기'),
             onTap: () async {
-              Navigator.of(sheetCtx).pop(); // 시트 닫고
+              Navigator.of(sheetCtx).pop(); // 시트 닫기
               await showEditNoteSheet(
                 context,
                 initialText: memoText,
                 availableTags: availableTags,
                 initialSelectedTags: selectedTags,
               );
-            },
-          ),
-
-          // GPX 내보내기
-          ListTile(
-            leading: const Icon(Icons.file_upload_outlined),
-            title: const Text('GPX 내보내기'),
-            onTap: () {
-              Navigator.of(sheetCtx).pop();
-              _snack('내보내기는 나중에 연결');
             },
           ),
 
