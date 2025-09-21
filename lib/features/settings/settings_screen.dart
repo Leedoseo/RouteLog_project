@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/features/settings/widgets/widgets.dart';
+import 'package:routelog_project/features/routes/route_import_sheet.dart';
+import 'package:routelog_project/features/routes/route_export_sheet.dart';
 
 /// 설정 화면(카드 스타일 목업으로 변경)
 class SettingsScreen extends StatefulWidget {
@@ -155,7 +157,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             leading: Icons.ios_share_rounded,
             title: "데이터 내보내기",
             subtitle: "GPX/JSON으로 내보내기 (미구현)",
-            onTap: () => _snack("내보내기는 나중에 연결"),
+            onTap: () => showRouteExportSheet(context),
           ),
           const SizedBox(height: 8),
 
@@ -163,7 +165,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             leading: Icons.file_download_rounded,
             title: "데이터 가져오기",
             subtitle: "GPX/JSON으로 가져오기 (미구현)",
-            onTap: () => _snack("가져오기는 나중에 연결"),
+            onTap: () => showRouteImportSheet(context, from: "설정"),
           ),
           const SizedBox(height: 24),
 
