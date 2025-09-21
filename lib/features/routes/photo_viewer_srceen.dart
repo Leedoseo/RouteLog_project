@@ -1,21 +1,21 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-class PhotoViewrScreen extends StatefulWidget {
+class PhotoViewerScreen extends StatefulWidget {
   final int count; // 이미지 개수
   final int initialIndex; // 시작 인덱스
 
-  const PhotoViewrScreen({
+  const PhotoViewerScreen({
     super.key,
     required this.count,
     this.initialIndex = 0,
   });
 
   @override
-  State<PhotoViewrScreen> createState() => _PhotoViewrScreenState();
+  State<PhotoViewerScreen> createState() => _PhotoViewrScreenState();
 }
 
-class _PhotoViewrScreenState extends State<PhotoViewrScreen> {
+class _PhotoViewrScreenState extends State<PhotoViewerScreen> {
   late final PageController _controller;
   late int _index;
 

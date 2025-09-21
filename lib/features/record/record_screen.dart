@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/features/record/record_finish_sheet.dart';
 import 'package:routelog_project/features/record/widgets/widgets.dart';
-import 'package:routelog_project/core/widgets/widgets.dart';
+import 'package:routelog_project/core/widgets/widgets.dart' show PermissionBanner;
 
 class RecordScreen extends StatelessWidget {
   const RecordScreen({super.key});
@@ -10,6 +10,9 @@ class RecordScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    const mockLocationGranted = false;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("기록"),
@@ -27,7 +30,14 @@ class RecordScreen extends StatelessWidget {
             const SizedBox(height: 8),
             const RecordStatusBadge(statusText: "대기중"), // 현재 상태 배지
             const SizedBox(height: 8),
-            const Expanded(child: MapPlaceholder()), // 지도 영역(미구현)
+
+            if (!mockLocationGranted)
+              PermissionBanner(
+                title: "위치 권한이 필요해요",
+                message: "실시간 기록을 위해 위치 접근 권한을 허용해 주세요",
+                actionLabel: "설정",
+                onAction: () => _notImplemented(context, "권한 요청/이동은 나중에 연결"),
+              ),
             const SizedBox(height: 8),
             const MetricsPanel( // 핵심 지표 3개
               distanceText: "-- km",

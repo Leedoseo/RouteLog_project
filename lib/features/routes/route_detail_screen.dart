@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/features/routes/edit_note_sheet.dart';
-import 'package:routelog_project/features/routes/photo_viewr_srceen.dart';
+import 'package:routelog_project/features/routes/photo_viewer_srceen.dart';
 import 'package:routelog_project/features/routes/route_actions_sheet.dart';
 import 'package:routelog_project/features/routes/widgets/widgets.dart';
 import 'package:routelog_project/core/widgets/widgets.dart';
@@ -94,7 +94,7 @@ class RouteDetailScreen extends StatelessWidget {
                 onTap: (i) {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => PhotoViewrScreen(count: 4, initialIndex: i),
+                      builder: (_) => PhotoViewerScreen(count: 4, initialIndex: i),
                     )
                   );
                 }

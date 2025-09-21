@@ -24,7 +24,7 @@ class AppliedFiltersBar extends StatelessWidget {
     this.onClearDistance,
     this.onClearDuration,
     this.onClearSort,
-    this. onClearAll,d
+    this. onClearAll,
   });
 
   bool get _hasAny =>
