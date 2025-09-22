@@ -19,7 +19,7 @@ class RecordBanner extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     Color bg;
-    Color fg = cs.onPrimaryContainer;
+    Color fg;
     switch (variant) {
       case BannerVariant.recording:
         bg = cs.errorContainer;
@@ -35,7 +35,7 @@ class RecordBanner extends StatelessWidget {
         fg = cs.onPrimaryContainer;
     }
 
-    final content = Container(
+    final banner = Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: bg.withOpacity(0.95),
@@ -44,7 +44,7 @@ class RecordBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline_rounded, size: 18),
+          Icon(Icons.info_outline_rounded, size: 18, color: fg),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -65,8 +65,17 @@ class RecordBanner extends StatelessWidget {
       ),
     );
 
+    // 잉크 리플을 살리고 싶다면 InkWell 주변에 Material을 두는 게 가장 깔끔
     return onTap == null
-        ? content
-        : InkWell(onTap: onTap, borderRadius: BorderRadius.circular(12), child: content);
+        ? banner
+        : Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: banner,
+      ),
+    );
   }
 }

@@ -10,7 +10,6 @@ class RecordScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     const mockLocationGranted = false;
 
     return Scaffold(
@@ -28,18 +27,40 @@ class RecordScreen extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 8),
-            const RecordStatusBadge(statusText: "대기중"), // 현재 상태 배지
+            const RecordStatusBadge(statusText: "대기중"),
             const SizedBox(height: 8),
 
-            if (!mockLocationGranted)
+            // 지도 + 레코드 배너(오버레이)
+            Expanded(
+              child: Stack(
+                children: [
+                  const MapPlaceholder(), // (목업 지도)
+                  Positioned(
+                    left: 16,
+                    right: 16,
+                    child: RecordBanner(
+                      text: "기록을 시작하려면 ▶ 버튼을 눌러주세요",
+                      variant: BannerVariant.idle,
+                      onTap: () => _notImplemented(context, "배너 탭 (미구현)"),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // 권한 배너(옵션)
+            if (!mockLocationGranted) ...[
+              const SizedBox(height: 8),
               PermissionBanner(
                 title: "위치 권한이 필요해요",
                 message: "실시간 기록을 위해 위치 접근 권한을 허용해 주세요",
                 actionLabel: "설정",
                 onAction: () => _notImplemented(context, "권한 요청/이동은 나중에 연결"),
               ),
+            ],
+
             const SizedBox(height: 8),
-            const MetricsPanel( // 핵심 지표 3개
+            const MetricsPanel(
               distanceText: "-- km",
               durationText: "--:--",
               paceText: "-- /km",
