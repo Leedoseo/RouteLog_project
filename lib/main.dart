@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/core/theme/app_theme.dart';
+import 'package:routelog_project/core/theme/theme_controller.dart';
 import 'package:routelog_project/features/home/home_screen.dart';
 
 void main() {
@@ -11,11 +12,19 @@ class RouteLogApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: "RouteLogApp",
-      debugShowCheckedModeBanner: false,
-      theme: buildAppTheme(), // 전역 색상/컴포넌트 스타일 정의
-      home: const HomeScreen(), // 최초 진입 화면
+    final ctrl = ThemeController.instance; // ★ 싱글톤 컨트롤러
+    return AnimatedBuilder(
+      animation: ctrl, // ChangeNotifier 구독
+      builder: (_, __) {
+        return MaterialApp(
+          title: "RouteLog",
+          theme: buildLightTheme(),
+          darkTheme: buildDarkTheme(),
+          themeMode: ctrl.mode, // ★ 현재 ThemeMode
+          debugShowCheckedModeBanner: false,
+          home: const HomeScreen(),
+        );
+      },
     );
   }
 }
