@@ -85,13 +85,27 @@ ThemeData buildLightTheme() {
         TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
       },
     ),
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: cs.surface,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      showDragHandle: true,
+      dragHandleColor: cs.outline,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+    ),
+    dialogTheme: DialogTheme(
+      backgroundColor: cs.surface,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
   );
 
   return base;
 }
 
 /// 다크모드
-/// 다크모드 (라이트를 copyWith하지 말고 새로 구성)
 ThemeData buildDarkTheme() {
   const seed = Color(0xFF3E7BFA);
   final cs = ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark);
@@ -191,6 +205,21 @@ ThemeData buildDarkTheme() {
         TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
         TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
       },
+    ),
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: cs.surface,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      showDragHandle: true,
+      dragHandleColor: cs.outline,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+    ),
+    dialogTheme: DialogTheme(
+      backgroundColor: cs.surface,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
     // 배경 계열 명시(안 써도 ColorScheme 따라가지만 확실히 박음)
     scaffoldBackgroundColor: cs.surface,
