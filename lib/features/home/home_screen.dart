@@ -78,21 +78,6 @@ class HomeScreen extends StatelessWidget {
                     },
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: QuickActionButton(
-                    icon: Icons.ios_share_rounded,
-                    label: '내보내기',
-                    onTap: () async {
-                      // 페이지 버전이 있다면:
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const _RouteExportPageStub()),
-                      );
-                      // 시트(ModalBottomSheet)라면 위 두 줄 대신:
-                      // showRouteExportSheet(context);
-                    },
-                  ),
-                ),
               ],
             ),
 
