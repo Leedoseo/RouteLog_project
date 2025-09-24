@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 /// 공용 설정 타일 (아이콘 + 타이틀 + 서브타이틀 + 트레일링)
-/// 리스트 형태로 여러 개가 나열되는 기본 단위
+/// - 패딩 통일: H16 / V8
+/// - 라운드 통일: R12
 class SettingsTile extends StatelessWidget {
   final IconData? leading;
   final String title;
@@ -20,39 +21,43 @@ class SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final r = BorderRadius.circular(12);
+
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: r,
       child: Ink(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // ← 패딩 통일
         decoration: BoxDecoration(
           color: cs.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: r, // ← 라운드 통일
           border: Border.all(color: cs.outlineVariant),
         ),
         child: Row(
           children: [
             if (leading != null) ...[
-              Icon(leading, size: 22),
+              Icon(leading, size: 22, color: cs.onSurfaceVariant),
               const SizedBox(width: 12),
             ],
+            // 본문
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // 굵기만 살짝 강화
                   Text(
                     title,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleSmall
-                        ?.copyWith(
-                      fontWeight: FontWeight.w700)),
+                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                  ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 4),
                     Text(
                       subtitle!,
-                      style: Theme.of(context).textTheme.bodySmall,
+                      maxLines: 2, // ← 2줄 허용
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall,
                     ),
                   ],
                 ],
@@ -64,7 +69,7 @@ class SettingsTile extends StatelessWidget {
             ],
             if (onTap != null) ...[
               const SizedBox(width: 8),
-              const Icon(Icons.chevron_right_rounded),
+              Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
             ],
           ],
         ),

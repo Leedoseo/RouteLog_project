@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// 스위치가 포함된 설정 타일
-/// 외부에서 value / onChange만 받는 stateless
+/// 스위치가 포함된 설정 타일 (Stateless)
+/// - 패딩 통일: H16 / V8
+/// - 라운드 통일: R12
 
 class SettingsSwitchTile extends StatelessWidget {
   final IconData? leading;
@@ -21,43 +22,51 @@ class SettingsSwitchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cs.outlineVariant),
-      ),
-      child: Row(
-        children: [
-          if (leading != null) ...[
-            Icon(leading, size: 22),
-            const SizedBox(width: 12),
-          ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w700)),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 4),
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final r = BorderRadius.circular(12);
+
+    return InkWell(
+      onTap: () => onChanged(!value), // 전체 영역 탭으로도 토글
+      borderRadius: r,
+      child: Ink(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // ← 패딩 통일
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerHighest,
+          borderRadius: r, // ← 라운드 통일
+          border: Border.all(color: cs.outlineVariant),
+        ),
+        child: Row(
+          children: [
+            if (leading != null) ...[
+              Icon(leading, size: 22, color: cs.onSurfaceVariant),
+              const SizedBox(width: 12),
+            ],
+            // 본문
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    subtitle!,
-                    style: Theme.of(context).textTheme.bodySmall,
+                    title,
+                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
                   ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle!,
+                      maxLines: 2, // ← 2줄 허용
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Switch(value: value, onChanged: onChanged),
-        ],
+            const SizedBox(width: 12),
+            Switch(value: value, onChanged: onChanged),
+          ],
+        ),
       ),
     );
   }
