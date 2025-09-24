@@ -33,7 +33,16 @@ class QuickActionButton extends StatelessWidget {
               const SizedBox(width: 8),
               ConstrainedBox(
                 constraints: const BoxConstraints(minHeight: 44),
-                child: Center(child: Text(label, style: t.labelLarge?.copyWith(fontWeight: FontWeight.w700))),
+                child: Center(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                      textScaler: const TextScaler.linear(1.0), // 라벨만 스케일 고정 (선택)
+                      style: t.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+                    )
+                ),
               ),
             ],
           ),
