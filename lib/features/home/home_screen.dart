@@ -5,12 +5,11 @@ import 'package:routelog_project/features/home/widgets/mini_stat.dart';
 import 'package:routelog_project/features/home/widgets/quick_action_button.dart';
 import 'package:routelog_project/features/home/widgets/recent_route_tile.dart';
 
-// ↓ 실제 화면이 있으면 해당 파일로 교체하세요.
 import 'package:routelog_project/features/record/record_screen.dart';
 import 'package:routelog_project/features/routes/routes_list_screen.dart';
 import 'package:routelog_project/features/settings/settings_screen.dart';
 import 'package:routelog_project/features/stats/stats_screen.dart';
-// 만약 export는 BottomSheet 함수만 있다면, 아래 RouteExportPage 대체 코드는 지우고 onTap에서 showRouteExportSheet 호출하세요.
+import 'package:routelog_project/features/record/record_screen.dart';
 import 'package:routelog_project/features/routes/route_export_sheet.dart';
 
 class HomeScreen extends StatelessWidget {
