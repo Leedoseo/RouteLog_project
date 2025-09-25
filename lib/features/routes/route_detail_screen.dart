@@ -1,129 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:routelog_project/features/routes/edit_note_sheet.dart';
-import 'package:routelog_project/features/routes/photo_viewer_srceen.dart';
-import 'package:routelog_project/features/routes/route_actions_sheet.dart';
-import 'package:routelog_project/features/routes/widgets/widgets.dart';
-import 'package:routelog_project/core/widgets/widgets.dart';
 
 class RouteDetailScreen extends StatelessWidget {
-  const RouteDetailScreen({super.key});
+  const RouteDetailScreen({super.key, required this.title});
+  final String title;
 
   @override
   Widget build(BuildContext context) {
-    // 목업용 더미 데이터
-    const title = "한강 러닝 코스";
-    const dateText = "2025.09.03 (수)";
-    const distanceText = "5.20km";
-    const durationText = "28:12";
-    const paceText = "5:25 /km";
-    const tags = <String>["러닝", "산책", "퇴근길"];
-    const memo = "가을 바람 불어서 컨디션 좋았음. 반포대교 구간 혼잡.";
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("루트 상세"),
-        actions: [
-          IconButton(
-            tooltip: '편집(미구현)',
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: () => showEditNoteSheet(
-              context,
-              initialText: memo, // 기존 메모 넘기기(옵션)
+      appBar: AppBar(title: Text(title)),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        children: [
+          Container(
+            height: 220,
+            decoration: BoxDecoration(
+              color: cs.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: cs.outlineVariant),
             ),
+            alignment: Alignment.center,
+            child: Icon(Icons.map_rounded, size: 48, color: cs.onSurfaceVariant),
           ),
-          IconButton(
-            tooltip: "공유(미구현)",
-            icon: const Icon(Icons.ios_share_rounded),
-            onPressed: () => _notImplemented(context, "공유는 나중에 연결"),
-          ),
-          IconButton(
-            tooltip: "더보기",
-            icon: const Icon(Icons.more_vert_rounded),
-            onPressed: () => showRouteActionsSheet(
-              context,
-              memoText: memo,
-              availableTags: const ["러닝", "산책", "퇴근길"],
-              selectedTags: const {"러닝", "퇴근길"},
-            ),
-          ),
-        ],
-      ),
-      body: CustomScrollView(
-        slivers: [
-          // 상단 미니맵
-          const SliverToBoxAdapter(child: SizedBox(height: 12)),
-          SliverToBoxAdapter(child: MapMiniPlaceholder(title: title)),
-
-          // 메타 행
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: MetaRow(
-                dateText: dateText,
-                distanceText: distanceText,
-                durationText: durationText,
-                paceText: paceText,
-              ),
-            ),
-          ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-
-          // 태그 섹션
-          const SliverToBoxAdapter(child: SectionTitlePadding("태그")),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [for (final t in tags) TagChip(label: "#$t")],
-              ),
-            ),
-          ),
-
-          const SliverToBoxAdapter(child: SizedBox(height:20)),
-
-          // 사진 섹션
-          const SliverToBoxAdapter(child: SectionTitlePadding("사진")),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: PhotoGrid(
-                count: 4, // 0~6에서 테스트
-                onTap: (i) {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => PhotoViewerScreen(count: 4, initialIndex: i),
-                    )
-                  );
-                }
-              ),
-            ),
-          ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-
-          // 메모 섹션
-          const SliverToBoxAdapter(child: SectionTitlePadding("메모")),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-              child: MemoCard(
-                text: memo,
-                onEditTap: () => showEditNoteSheet(
-                  context,
-                  initialText: memo,
-                ),
-              ),
-            ),
-          ),
+          const SizedBox(height: 16),
+          Text('메트릭', style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
+          Text('거리 5.2km · 28분 · 5\'25"/km', style: t.bodyMedium),
         ],
       ),
     );
   }
-}
-
-void _notImplemented(BuildContext context, String msg) {
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 }
