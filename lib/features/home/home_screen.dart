@@ -61,7 +61,7 @@ class HomeScreen extends StatelessWidget {
                     label: '기록 시작',
                     onTap: () {
                       Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const RecordScreen()),
+                        MaterialPageRoute(builder: (_) => const RecordScreen()), // 반영 안된거 수정
                       );
                     },
                   ),
