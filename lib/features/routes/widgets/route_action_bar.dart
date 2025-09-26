@@ -33,12 +33,25 @@ class _RouteActionBarState extends State<RouteActionBar> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final t = Theme.of(context).textTheme;
 
-    Widget btn(IconData icon, String label, VoidCallback? onTap, {Color? bg, Color? fg, bool filled = false}) {
+    Widget btn({
+      required IconData icon,
+      required String label,
+      required VoidCallback? onTap,
+      bool filled = false,
+      Color? bg,
+      Color? fg,
+      double? width,
+    }) {
       final r = BorderRadius.circular(14);
-      return Expanded(
+      final _bg = filled ? (bg ?? cs.primary) : cs.surface;
+      final _fg = fg ?? (filled ? cs.onPrimary : cs.onSurface);
+
+      return SizedBox(
+        width: width, // ← 그리드 셀 폭 고정
         child: Material(
-          color: filled ? (bg ?? cs.primary) : cs.surface,
+          color: _bg,
           shape: RoundedRectangleBorder(
             borderRadius: r,
             side: BorderSide(color: cs.outlineVariant),
@@ -51,11 +64,16 @@ class _RouteActionBarState extends State<RouteActionBar> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(icon, size: 20, color: fg ?? (filled ? cs.onPrimary : cs.onSurface)),
+                  Icon(icon, size: 20, color: _fg),
                   const SizedBox(width: 8),
-                  Text(label, style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w700, color: fg ?? (filled ? cs.onPrimary : cs.onSurface),
-                  )),
+                  Flexible( // 긴 한글 대비
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: t.labelLarge?.copyWith(fontWeight: FontWeight.w700, color: _fg),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -66,20 +84,52 @@ class _RouteActionBarState extends State<RouteActionBar> {
 
     return SoftInfoCard(
       padding: const EdgeInsets.all(12),
-      child: Row(
-        children: [
-          btn(
-            _fav ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-            _fav ? '즐겨찾기 해제' : '즐겨찾기',
-                () { setState(() => _fav = !_fav); widget.onToggleFavorite?.call(_fav); },
-          ),
-          const SizedBox(width: 8),
-          btn(Icons.ios_share_rounded, '내보내기', widget.onExport),
-          const SizedBox(width: 8),
-          btn(Icons.share_rounded, '공유', widget.onShare),
-          const SizedBox(width: 8),
-          btn(Icons.delete_forever_rounded, '삭제', widget.onDelete, bg: cs.errorContainer, fg: cs.onErrorContainer, filled: true),
-        ],
+      child: LayoutBuilder(
+        builder: (context, c) {
+          // 반응형: 넓으면 4열, 좁으면 2열
+          // (iPhone 12/13/14/15 기본폭 ~390dp → 2열이 안정적)
+          const gap = 8.0;
+          final fourCols = c.maxWidth >= 560;
+          final cols = fourCols ? 4 : 2;
+          final cellWidth = (c.maxWidth - gap * (cols - 1)) / cols;
+
+          return Wrap(
+            spacing: gap,
+            runSpacing: gap,
+            children: [
+              btn(
+                icon: _fav ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                label: _fav ? '즐겨찾기 해제' : '즐겨찾기',
+                onTap: () {
+                  setState(() => _fav = !_fav);
+                  widget.onToggleFavorite?.call(_fav);
+                },
+                width: cellWidth,
+              ),
+              btn(
+                icon: Icons.ios_share_rounded,
+                label: '내보내기',
+                onTap: widget.onExport,
+                width: cellWidth,
+              ),
+              btn(
+                icon: Icons.share_rounded,
+                label: '공유',
+                onTap: widget.onShare,
+                width: cellWidth,
+              ),
+              btn(
+                icon: Icons.delete_forever_rounded,
+                label: '삭제',
+                onTap: widget.onDelete,
+                filled: true,
+                bg: cs.errorContainer,
+                fg: cs.onErrorContainer,
+                width: cellWidth,
+              ),
+            ],
+          );
+        },
       ),
     );
   }
