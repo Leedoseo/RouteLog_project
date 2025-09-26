@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:routelog_project/features/routes/widgets/widgets.dart';
+import 'package:routelog_project/core/decoration/app_background.dart';
 
 class RouteDetailScreen extends StatelessWidget {
   const RouteDetailScreen({super.key, required this.title});
@@ -7,29 +9,49 @@ class RouteDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
-    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-        children: [
-          Container(
-            height: 220,
-            decoration: BoxDecoration(
-              color: cs.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: cs.outlineVariant),
-            ),
-            alignment: Alignment.center,
-            child: Icon(Icons.map_rounded, size: 48, color: cs.onSurfaceVariant),
-          ),
-          const SizedBox(height: 16),
-          Text('메트릭', style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 8),
-          Text('거리 5.2km · 28분 · 5\'25"/km', style: t.bodyMedium),
+      appBar: AppBar(
+        title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        actions: [
+          IconButton(onPressed: () {}, icon: const Icon(Icons.edit_location_alt), tooltip: '편집(목업)'),
         ],
       ),
+      body: AppBackground(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          children: [
+            const RouteHeaderMap(height: 220),
+            const SizedBox(height: 12),
+            const RouteMetaPanel(
+              distanceText: '5.20 km',
+              durationText: '28:12',
+              paceText: '5\'25"/km',
+              elevationText: '+64 m',
+            ),
+            const SizedBox(height: 12),
+            const RouteElevationCard(),
+            const SizedBox(height: 12),
+            RouteActionBar(
+              isFavorited: false,
+              onToggleFavorite: (fav) => _snack(context, fav ? '즐겨찾기 추가' : '즐겨찾기 해제'),
+              onExport: () => _snack(context, '내보내기(목업)'),
+              onShare: () => _snack(context, '공유(목업)'),
+              onDelete: () => _snack(context, '삭제(목업)'),
+            ),
+            const SizedBox(height: 24),
+            Text('메모', style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            const RouteNoteCard(
+              text: '강변 남단은 바람이 많이 붐. 북단에서 출발하면 반환점에서 역풍.',
+            ),
+          ],
+        ),
+      ),
     );
+  }
+
+  static void _snack(BuildContext context, String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 }
