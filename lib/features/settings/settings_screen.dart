@@ -4,6 +4,9 @@ import 'package:routelog_project/features/routes/route_import_sheet.dart';
 import 'package:routelog_project/features/routes/route_export_sheet.dart';
 import 'package:routelog_project/core/theme/theme_controller.dart';
 
+// Firestore 동기화
+import 'package:routelog_project/core/data/firebase_repository.dart';
+
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
   static const routeName = "/settings";
@@ -27,6 +30,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
       case ThemeMode.dark:
         return "다크";
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // 🔗 Firestore 값 구독 → 라벨 즉시 반영
+    FirebaseRepository.instance.distanceUnitStream().listen((v) {
+      if (v != null && mounted) setState(() => _distanceUnit = v);
+    });
   }
 
   Future<void> _pickThemeMode() async {
@@ -200,7 +212,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     if (result != null && result != _distanceUnit) {
       setState(() => _distanceUnit = result);
-      _snack("거리 단위 변경(목업): $_distanceUnit");
+      // ✅ Firestore 반영
+      await FirebaseRepository.instance.setDistanceUnit(result);
+      _snack("거리 단위 변경: $_distanceUnit");
     }
   }
 
@@ -215,6 +229,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           const SettingsSectionTitle("표시 & 단위"),
           const SizedBox(height: 8),
+
+          // 테마 모드
           SettingsTile(
             leading: Icons.brightness_6_rounded,
             title: "테마 모드",
@@ -226,6 +242,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: _pickThemeMode,
           ),
           const SizedBox(height: 8),
+
+          // 거리 단위 (Firestore 동기화)
           SettingsTile(
             leading: Icons.straighten_rounded,
             title: "거리 단위",
@@ -236,6 +254,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             onTap: _pickDistanceUnit,
           ),
+
           const SizedBox(height: 24),
           const SettingsSectionTitle("백업 & 내보내기"),
           const SizedBox(height: 8),
@@ -253,6 +272,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () => showRouteImportSheet(context, from: "설정"),
           ),
           const SizedBox(height: 24),
+
           const SettingsSectionTitle("정보"),
           const SizedBox(height: 8),
           SettingsTile(
