@@ -4,97 +4,125 @@ import 'package:routelog_project/features/stats/widgets/widgets.dart';
 
 class StatsScreen extends StatefulWidget {
   const StatsScreen({super.key});
+  static const routeName = "/stats";
 
   @override
   State<StatsScreen> createState() => _StatsScreenState();
 }
 
 class _StatsScreenState extends State<StatsScreen> {
-  Period _period = Period.week;
+  // ── 목업 상태
+  bool _isWeekly = true; // 주간/월간 토글
+  int _weekIndex = 0;    // 0 = 이번 주, -1 저번 주 …
+  int _monthIndex = 0;   // 0 = 이번 달, -1 저번 달 …
 
-  // 목업 데이터 (기간별로 값만 다르게 보여줌)
-  Map<String, String> get _kpi {
-    switch (_period) {
-      case Period.week:
-        return {
-          'distance': '42.3 km',
-          'time': '3:25:12',
-          'pace': "5'18\"/km",
-          'sessions': '5',
-        };
-      case Period.month:
-        return {
-          'distance': '168.4 km',
-          'time': '13:42:10',
-          'pace': "5'22\"/km",
-          'sessions': '21',
-        };
-      case Period.all:
-        return {
-          'distance': '1,240 km',
-          'time': '102:13:54',
-          'pace': "5'30\"/km",
-          'sessions': '152',
-        };
+  // 더미 데이터(주/월 각각 다른 배열 사용)
+  List<double> get _series {
+    if (_isWeekly) {
+      // 7일
+      return const [3.2, 5.0, 0.0, 7.8, 4.6, 0.0, 10.2];
+    } else {
+      // 30일 간략 샘플
+      return const [2,4,3,6,5,7,2,0,8,6,5,3,4,7,8,5,2,4,6,7,9,4,3,6,7,5,4,3,6,7]
+          .map((e) => e.toDouble()).toList();
     }
   }
+
+  String get _periodLabel {
+    if (_isWeekly) {
+      if (_weekIndex == 0) return "이번 주";
+      if (_weekIndex == -1) return "지난 주";
+      return "${-_weekIndex}주 전";
+    } else {
+      if (_monthIndex == 0) return "이번 달";
+      if (_monthIndex == -1) return "지난 달";
+      return "${-_monthIndex}개월 전";
+    }
+  }
+
+  // 요약 수치 목업
+  String get _totalDistance => _isWeekly ? "26.8 km" : "112.4 km";
+  String get _totalTime => _isWeekly ? "2:43:12" : "11:28:05";
+  String get _avgPace => _isWeekly ? "5'25\"/km" : "5'32\"/km";
 
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('통계')),
+      appBar: AppBar(title: const Text("통계")),
       body: AppBackground(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           children: [
-            PeriodTabs(
-              value: _period,
-              onChanged: (p) => setState(() => _period = p),
-            ),
-            const SizedBox(height: 12),
-
-            // KPI 4장
+            // ── 탭 토글 (주간/월간) + 기간 이동
             Row(
               children: [
-                Expanded(child: StatKpiCard(label: '총 거리', value: _kpi['distance']!)),
-                const SizedBox(width: 12),
-                Expanded(child: StatKpiCard(label: '총 시간', value: _kpi['time']!)),
+                SegmentChip(
+                  label: "주간",
+                  selected: _isWeekly,
+                  onTap: () => setState(() => _isWeekly = true),
+                ),
+                const SizedBox(width: 8),
+                SegmentChip(
+                  label: "월간",
+                  selected: !_isWeekly,
+                  onTap: () => setState(() => _isWeekly = false),
+                ),
+                const Spacer(),
+                IconButton(
+                  tooltip: "이전",
+                  onPressed: () => setState(() {
+                    if (_isWeekly) _weekIndex -= 1; else _monthIndex -= 1;
+                  }),
+                  icon: const Icon(Icons.chevron_left_rounded),
+                ),
+                Text(_periodLabel, style: t.labelLarge),
+                IconButton(
+                  tooltip: "다음",
+                  onPressed: () => setState(() {
+                    if (_isWeekly) {
+                      if (_weekIndex < 0) _weekIndex += 1;
+                    } else {
+                      if (_monthIndex < 0) _monthIndex += 1;
+                    }
+                  }),
+                  icon: const Icon(Icons.chevron_right_rounded),
+                ),
               ],
             ),
             const SizedBox(height: 12),
+
+            // ── 요약 카드 3개
             Row(
               children: [
-                Expanded(child: StatKpiCard(label: '평균 페이스', value: _kpi['pace']!)),
+                Expanded(child: SummaryCard(icon: Icons.route_rounded, label: "총 거리", value: _totalDistance)),
                 const SizedBox(width: 12),
-                Expanded(child: StatKpiCard(label: '세션 수', value: _kpi['sessions']!)),
+                Expanded(child: SummaryCard(icon: Icons.timer_outlined, label: "총 시간", value: _totalTime)),
+                const SizedBox(width: 12),
+                Expanded(child: SummaryCard(icon: Icons.speed_rounded, label: "평균 페이스", value: _avgPace)),
               ],
             ),
             const SizedBox(height: 16),
 
-            // 스파크라인(목업)
-            SparklineCard(
-              title: _period == Period.week ? '거리 추이(최근 7일)' : '거리 추이(최근 14일)',
-              points: _period == Period.week
-                  ? const [2, 6, 4, 8, 5, 7, 9]
-                  : const [1, 3, 2, 6, 4, 7, 5, 9, 6, 8, 4, 7, 5, 8],
+            // ── 추세 차트 카드 (라인)
+            TrendCard(
+              title: "러닝 추세",
+              subtitle: _isWeekly ? "일별 거리(km)" : "일별 거리(km)",
+              periodLabel: _periodLabel,
+              values: _series,
+              xDivisions: _isWeekly ? 7 : 6,
             ),
             const SizedBox(height: 16),
 
-            // (선택) 분포 카드 – 요일/시간대 목업
-            const DistributionCard(),
-
-            const SizedBox(height: 24),
-            Text('최근 기록', style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+            // ── 세션 요약
+            Text("세션 요약", style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
-
-            // 최근 세션 3개
-            const RecentSessionTile(date: '2025-09-10', distance: '5.2 km', time: '28분', pace: "5'25\"/km"),
+            const SplitTile(title: "2025-09-21 (일)", meta: "7.8 km · 42:10 · 5'24\"/km"),
             const SizedBox(height: 8),
-            const RecentSessionTile(date: '2025-09-08', distance: '10.0 km', time: '54분', pace: "5'22\"/km"),
+            const SplitTile(title: "2025-09-19 (금)", meta: "10.2 km · 56:31 · 5'32\"/km"),
             const SizedBox(height: 8),
-            const RecentSessionTile(date: '2025-09-05', distance: '7.5 km', time: '41분', pace: "5'30\"/km"),
+            const SplitTile(title: "2025-09-17 (수)", meta: "5.0 km · 25:38 · 5'08\"/km"),
           ],
         ),
       ),
