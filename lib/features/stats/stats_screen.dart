@@ -93,15 +93,39 @@ class _StatsScreenState extends State<StatsScreen> {
             ),
             const SizedBox(height: 12),
 
-            // ── 요약 카드 3개
-            Row(
-              children: [
-                Expanded(child: SummaryCard(icon: Icons.route_rounded, label: "총 거리", value: _totalDistance)),
-                const SizedBox(width: 12),
-                Expanded(child: SummaryCard(icon: Icons.timer_outlined, label: "총 시간", value: _totalTime)),
-                const SizedBox(width: 12),
-                Expanded(child: SummaryCard(icon: Icons.speed_rounded, label: "평균 페이스", value: _avgPace)),
-              ],
+            // ── 요약 카드(화면 폭에 따라 자동 레이아웃: 좁으면 2열, 넓으면 3열)
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final w = constraints.maxWidth;
+
+                if (w < 380) {
+                  // 좁은 화면: 2열(2개 + 1개)
+                  return Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(child: SummaryCard(icon: Icons.route_rounded, label: "총 거리", value: _totalDistance)),
+                          const SizedBox(width: 12),
+                          Expanded(child: SummaryCard(icon: Icons.timer_outlined, label: "총 시간", value: _totalTime)),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      SummaryCard(icon: Icons.speed_rounded, label: "평균 페이스", value: _avgPace),
+                    ],
+                  );
+                } else {
+                  // 넓은 화면: 3열 고정
+                  return Row(
+                    children: [
+                      Expanded(child: SummaryCard(icon: Icons.route_rounded, label: "총 거리", value: _totalDistance)),
+                      const SizedBox(width: 12),
+                      Expanded(child: SummaryCard(icon: Icons.timer_outlined, label: "총 시간", value: _totalTime)),
+                      const SizedBox(width: 12),
+                      Expanded(child: SummaryCard(icon: Icons.speed_rounded, label: "평균 페이스", value: _avgPace)),
+                    ],
+                  );
+                }
+              },
             ),
             const SizedBox(height: 16),
 
