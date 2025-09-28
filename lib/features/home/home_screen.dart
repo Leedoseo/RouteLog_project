@@ -1,158 +1,207 @@
 import 'package:flutter/material.dart';
-import 'package:routelog_project/features/home/widgets/widgets.dart';
+import 'package:routelog_project/core/decoration/app_background.dart';
+import 'package:routelog_project/features/home/widgets/home_hero_dashboard.dart';
+import 'package:routelog_project/features/home/widgets/mini_stat.dart';
+import 'package:routelog_project/features/home/widgets/quick_action_button.dart';
+import 'package:routelog_project/features/home/widgets/recent_route_tile.dart';
+
 import 'package:routelog_project/features/record/record_screen.dart';
 import 'package:routelog_project/features/routes/routes_list_screen.dart';
-import 'package:routelog_project/features/stats/stats_screen.dart';
-import 'package:routelog_project/features/search/search_screen.dart';
 import 'package:routelog_project/features/settings/settings_screen.dart';
+import 'package:routelog_project/features/stats/stats_screen.dart';
+// import 'package:routelog_project/features/routes/route_export_sheet.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+
     return Scaffold(
-      appBar: AppBar( // 앱 타이틀 및 검색 기능(현재는 미구현 상태 추후 구현)
-        title: const Text("RouteLog"),
+      appBar: AppBar(
+        title: const Text('RouteLog'),
         actions: [
           IconButton(
-            tooltip: "검색",
-            icon: Icon(Icons.search_rounded),
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SearchScreen()),
-              );
+              // 알림 페이지가 있으면 여기서 push
+              // Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NotificationsScreen()));
             },
-          ),
-          IconButton(
-            tooltip: "설정",
-            icon: const Icon(Icons.settings_rounded),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
-              );
-            },
+            icon: const Icon(Icons.notifications_none_rounded),
           ),
         ],
       ),
+      body: AppBackground(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          children: [
+            const HomeHeroDashboard(durationMinutes: 25, progress: 0.62),
+            const SizedBox(height: 16),
 
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  // 섹션 타이틀 : 오늘 요약 [거리, 시간 간단 타일]
-                  SectionTitle("오늘 요약"),
-                  SizedBox(height: 8),
-
-                  // SummaryTile 2개 : 거리/시간 값 표시. 현재는 "--"로 고정
-                  Row(
-                    children: [
-                      Expanded(child: SummaryTile(title: '거리', value: '-- km')), // 오늘 이동 거리
-                      SizedBox(width: 8),
-                      Expanded(child: SummaryTile(title: '시간', value: '-- m')), // 오늘 이동 시간
-                    ],
-                  ),
-
-                  SizedBox(height: 20),
-                  SectionTitle("빠른 동작"),
-                  SizedBox(height: 8),
-                ],
-              ),
+            // ── 오늘의 지표(세 타일 동일폭/고정높이)
+            Row(
+              children: const [
+                Expanded(child: MiniStat(icon: Icons.timer_outlined, label: '세션 시간', value: '00:25:12')),
+                SizedBox(width: 12),
+                Expanded(child: MiniStat(icon: Icons.directions_run_rounded, label: '누적 거리', value: '5.0 km')),
+                SizedBox(width: 12),
+                Expanded(child: MiniStat(icon: Icons.favorite_rounded, label: '평균 심박', value: '148 bpm')),
+              ],
             ),
-          ),
+            const SizedBox(height: 16),
 
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: QuickActionButton(
-                      label: "기록 시작",
-                      icon: Icons.play_arrow_rounded,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const RecordScreen()),
-                        );
-                      },
-                    ),
+            // ── 빠른 액션(직접 push로 내비)
+            Row(
+              children: [
+                Expanded(
+                  child: QuickActionButton(
+                    icon: Icons.play_arrow_rounded,
+                    label: '기록 시작',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const RecordScreen()), // 반영 안된거 수정
+                      );
+                    },
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: QuickActionButton(
-                      label: "내 루트",
-                      icon: Icons.route_rounded,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const RoutesListScreen()),
-                        );
-                      },
-                    ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: QuickActionButton(
+                    icon: Icons.search_rounded,
+                    label: '루트 검색',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const RoutesListScreen()),
+                      );
+                    },
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: QuickActionButton(
-                      label: "통계",
-                      icon: Icons.insights_rounded,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const StatsScreen()),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 20)),
 
-          // 최근 루트 섹션 타이틀
-          const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: SectionTitlePadding("최근 루트"),
-              ),
-          ),
+            const SizedBox(height: 24),
 
-          // 최근 루트 리스트 : RouteCard 3개 고정 목업. 실제 데이터 연결은 나중에.
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            sliver: SliverList.separated(
-              itemCount: 3,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                return RouteCard(
-                  title: "루트 ${index + 1}", // 루트 이름/태그 요약 표시 예정
-                  subtitle: "2025.09.03  -  --km  -  --m", // 날짜/거리/시간 메타 표시 예정
-                  onTap: () => _notImplemented(context, "Route Detail 연결 예정"),
-                );
-              },
-            ),
-          ),
-        ],
+            // ── 최근 루트
+            Text('최근 루트', style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            ...List.generate(3, (i) {
+              return Padding(
+                padding: EdgeInsets.only(top: i == 0 ? 0 : 8),
+                child: RecentRouteTile(
+                  title: '강변 러닝 코스 $i',
+                  meta: '5.0km · 25분 · 5\'15"/km',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const RoutesListScreen()),
+                    );
+                  },
+                ),
+              );
+            }),
+          ],
+        ),
       ),
 
-      // FAB: 기록 시작 플로우 진입. 현재는 스낵바만 띄움.
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const RecordScreen()),
-          );
+      // ── 하단 탭 (홈 탭은 NO-OP, 나머지는 직접 push)
+      bottomNavigationBar: _HomeBottomBar(
+        onHome: () {
+          // 홈은 현재 화면이므로 아무 것도 하지 않음 (무한 푸시 방지)
         },
-        icon: const Icon(Icons.play_circle_fill_rounded),
-        label: const Text("기록 시작"),
+        onRoutes: () {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const RoutesListScreen()));
+        },
+        onStats: () {
+          // 통계 화면이 있다면 여기에 push
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const StatsScreen()));
+        },
+        onSettings: () {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
+        },
       ),
     );
   }
 }
 
-void _notImplemented(BuildContext context, String msg) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(msg)),
-  );
+class _HomeBottomBar extends StatelessWidget {
+  const _HomeBottomBar({
+    required this.onHome,
+    required this.onRoutes,
+    required this.onStats,
+    required this.onSettings,
+  });
+
+  final VoidCallback onHome;
+  final VoidCallback onRoutes;
+  final VoidCallback onStats;
+  final VoidCallback onSettings;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final t = Theme.of(context).textTheme;
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: cs.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: cs.outlineVariant),
+          ),
+          child: Row(
+            children: [
+              _navItem(context, Icons.home_rounded, '홈', selected: true,  onTap: onHome,    cs: cs, t: t),
+              _navItem(context, Icons.route_rounded, '루트', selected: false, onTap: onRoutes, cs: cs, t: t),
+              _navItem(context, Icons.query_stats,  '통계', selected: false, onTap: onStats,  cs: cs, t: t),
+              _navItem(context, Icons.settings_rounded, '설정', selected: false, onTap: onSettings, cs: cs, t: t),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _navItem(
+      BuildContext context,
+      IconData icon,
+      String label, {
+        required bool selected,
+        required VoidCallback onTap,
+        required ColorScheme cs,
+        required TextTheme t,
+      }) {
+    final color = selected ? cs.primary : cs.onSurfaceVariant;
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: color),
+              const SizedBox(height: 2),
+              Text(label, style: t.labelSmall?.copyWith(color: color)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── 임시 Export 페이지(없으면 삭제하고 showRouteExportSheet 사용)
+class _RouteExportPageStub extends StatelessWidget {
+  const _RouteExportPageStub();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('내보내기')),
+      body: const Center(child: Text('Export 화면(임시)')),
+    );
+  }
 }

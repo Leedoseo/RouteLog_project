@@ -1,129 +1,57 @@
 import 'package:flutter/material.dart';
-import 'package:routelog_project/features/routes/edit_note_sheet.dart';
-import 'package:routelog_project/features/routes/photo_viewer_srceen.dart';
-import 'package:routelog_project/features/routes/route_actions_sheet.dart';
 import 'package:routelog_project/features/routes/widgets/widgets.dart';
-import 'package:routelog_project/core/widgets/widgets.dart';
+import 'package:routelog_project/core/decoration/app_background.dart';
 
 class RouteDetailScreen extends StatelessWidget {
-  const RouteDetailScreen({super.key});
+  const RouteDetailScreen({super.key, required this.title});
+  final String title;
 
   @override
   Widget build(BuildContext context) {
-    // 목업용 더미 데이터
-    const title = "한강 러닝 코스";
-    const dateText = "2025.09.03 (수)";
-    const distanceText = "5.20km";
-    const durationText = "28:12";
-    const paceText = "5:25 /km";
-    const tags = <String>["러닝", "산책", "퇴근길"];
-    const memo = "가을 바람 불어서 컨디션 좋았음. 반포대교 구간 혼잡.";
+    final t = Theme.of(context).textTheme;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("루트 상세"),
+        title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: [
-          IconButton(
-            tooltip: '편집(미구현)',
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: () => showEditNoteSheet(
-              context,
-              initialText: memo, // 기존 메모 넘기기(옵션)
-            ),
-          ),
-          IconButton(
-            tooltip: "공유(미구현)",
-            icon: const Icon(Icons.ios_share_rounded),
-            onPressed: () => _notImplemented(context, "공유는 나중에 연결"),
-          ),
-          IconButton(
-            tooltip: "더보기",
-            icon: const Icon(Icons.more_vert_rounded),
-            onPressed: () => showRouteActionsSheet(
-              context,
-              memoText: memo,
-              availableTags: const ["러닝", "산책", "퇴근길"],
-              selectedTags: const {"러닝", "퇴근길"},
-            ),
-          ),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.edit_location_alt), tooltip: '편집(목업)'),
         ],
       ),
-      body: CustomScrollView(
-        slivers: [
-          // 상단 미니맵
-          const SliverToBoxAdapter(child: SizedBox(height: 12)),
-          SliverToBoxAdapter(child: MapMiniPlaceholder(title: title)),
-
-          // 메타 행
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: MetaRow(
-                dateText: dateText,
-                distanceText: distanceText,
-                durationText: durationText,
-                paceText: paceText,
-              ),
+      body: AppBackground(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          children: [
+            const RouteHeaderMap(height: 220),
+            const SizedBox(height: 12),
+            const RouteMetaPanel(
+              distanceText: '5.20 km',
+              durationText: '28:12',
+              paceText: '5\'25"/km',
+              elevationText: '+64 m',
             ),
-          ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-
-          // 태그 섹션
-          const SliverToBoxAdapter(child: SectionTitlePadding("태그")),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [for (final t in tags) TagChip(label: "#$t")],
-              ),
+            const SizedBox(height: 12),
+            const RouteElevationCard(),
+            const SizedBox(height: 12),
+            RouteActionBar(
+              isFavorited: false,
+              onToggleFavorite: (fav) => _snack(context, fav ? '즐겨찾기 추가' : '즐겨찾기 해제'),
+              onExport: () => _snack(context, '내보내기(목업)'),
+              onShare: () => _snack(context, '공유(목업)'),
+              onDelete: () => _snack(context, '삭제(목업)'),
             ),
-          ),
-
-          const SliverToBoxAdapter(child: SizedBox(height:20)),
-
-          // 사진 섹션
-          const SliverToBoxAdapter(child: SectionTitlePadding("사진")),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: PhotoGrid(
-                count: 4, // 0~6에서 테스트
-                onTap: (i) {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => PhotoViewerScreen(count: 4, initialIndex: i),
-                    )
-                  );
-                }
-              ),
+            const SizedBox(height: 24),
+            Text('메모', style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            const RouteNoteCard(
+              text: '강변 남단은 바람이 많이 붐. 북단에서 출발하면 반환점에서 역풍.',
             ),
-          ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-
-          // 메모 섹션
-          const SliverToBoxAdapter(child: SectionTitlePadding("메모")),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-              child: MemoCard(
-                text: memo,
-                onEditTap: () => showEditNoteSheet(
-                  context,
-                  initialText: memo,
-                ),
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
-}
 
-void _notImplemented(BuildContext context, String msg) {
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  static void _snack(BuildContext context, String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
 }

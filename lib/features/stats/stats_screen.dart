@@ -1,123 +1,155 @@
 import 'package:flutter/material.dart';
+import 'package:routelog_project/core/decoration/app_background.dart';
 import 'package:routelog_project/features/stats/widgets/widgets.dart';
 
 class StatsScreen extends StatefulWidget {
   const StatsScreen({super.key});
+  static const routeName = "/stats";
 
   @override
   State<StatsScreen> createState() => _StatsScreenState();
 }
 
 class _StatsScreenState extends State<StatsScreen> {
-  /// 현재 선택된 월 (1일로 고정 권장)
-  DateTime _month = DateTime(DateTime.now().year, DateTime.now().month, 1);
+  // ── 목업 상태
+  bool _isWeekly = true; // 주간/월간 토글
+  int _weekIndex = 0;    // 0 = 이번 주, -1 저번 주 …
+  int _monthIndex = 0;   // 0 = 이번 달, -1 저번 달 …
+
+  // 더미 데이터(주/월 각각 다른 배열 사용)
+  List<double> get _series {
+    if (_isWeekly) {
+      // 7일
+      return const [3.2, 5.0, 0.0, 7.8, 4.6, 0.0, 10.2];
+    } else {
+      // 30일 간략 샘플
+      return const [2,4,3,6,5,7,2,0,8,6,5,3,4,7,8,5,2,4,6,7,9,4,3,6,7,5,4,3,6,7]
+          .map((e) => e.toDouble()).toList();
+    }
+  }
+
+  String get _periodLabel {
+    if (_isWeekly) {
+      if (_weekIndex == 0) return "이번 주";
+      if (_weekIndex == -1) return "지난 주";
+      return "${-_weekIndex}주 전";
+    } else {
+      if (_monthIndex == 0) return "이번 달";
+      if (_monthIndex == -1) return "지난 달";
+      return "${-_monthIndex}개월 전";
+    }
+  }
+
+  // 요약 수치 목업
+  String get _totalDistance => _isWeekly ? "26.8 km" : "112.4 km";
+  String get _totalTime => _isWeekly ? "2:43:12" : "11:28:05";
+  String get _avgPace => _isWeekly ? "5'25\"/km" : "5'32\"/km";
 
   @override
   Widget build(BuildContext context) {
-    // 목업용 합계 KPI 값 (실제 구현 시 _month 기준으로 교체)
-    const totalDistance = "42.3km";
-    const totalDuration = "3h 58m";
-    const totalRuns = "12 회";
-
-    // 목업용 주간 데이터 (실제 구현 시 _month 기준으로 교체)
-    final weeklyDistance = [0.3, 0.6, 0.2, 0.8, 0.5, 0.7, 0.4];
-    final weeklyTime = [0.2, 0.4, 0.3, 0.7, 0.6, 0.8, 0.5];
+    final t = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("통계"),
-        actions: [
-          IconButton(
-            tooltip: "공유 (미구현)",
-            icon: const Icon(Icons.ios_share_rounded),
-            onPressed: () => _notImplemented(context, "공유는 나중에 연결"),
-          ),
-        ],
-      ),
-      body: CustomScrollView(
-        slivers: [
-          // 월 선택 바 (공용 위젯)
-          SliverToBoxAdapter(
-            child: MonthPickerBar(
-              month: _month,
-              onChanged: (m) => setState(() => _month = m),
-              minMonth: DateTime(2023, 1, 1), // (옵션) 서비스 시작 월
-              maxMonth: DateTime.now(),       // (옵션) 미래 제한
-              // showThisMonthButton: false,
+      appBar: AppBar(title: const Text("통계")),
+      body: AppBackground(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          children: [
+            // ── 탭 토글 (주간/월간) + 기간 이동
+            Row(
+              children: [
+                SegmentChip(
+                  label: "주간",
+                  selected: _isWeekly,
+                  onTap: () => setState(() => _isWeekly = true),
+                ),
+                const SizedBox(width: 8),
+                SegmentChip(
+                  label: "월간",
+                  selected: !_isWeekly,
+                  onTap: () => setState(() => _isWeekly = false),
+                ),
+                const Spacer(),
+                IconButton(
+                  tooltip: "이전",
+                  onPressed: () => setState(() {
+                    if (_isWeekly) _weekIndex -= 1; else _monthIndex -= 1;
+                  }),
+                  icon: const Icon(Icons.chevron_left_rounded),
+                ),
+                Text(_periodLabel, style: t.labelLarge),
+                IconButton(
+                  tooltip: "다음",
+                  onPressed: () => setState(() {
+                    if (_isWeekly) {
+                      if (_weekIndex < 0) _weekIndex += 1;
+                    } else {
+                      if (_monthIndex < 0) _monthIndex += 1;
+                    }
+                  }),
+                  icon: const Icon(Icons.chevron_right_rounded),
+                ),
+              ],
             ),
-          ),
+            const SizedBox(height: 12),
 
-          // KPI 카드 3개 (거리/시간/횟수)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: const [
-                  Expanded(child: KpiCard(label: "합계 거리", value: totalDistance, icon: Icons.route_rounded)),
-                  SizedBox(width: 8),
-                  Expanded(child: KpiCard(label: "합계 시간", value: totalDuration, icon: Icons.access_time_rounded)),
-                  SizedBox(width: 8),
-                  Expanded(child: KpiCard(label: "러닝 횟수", value: totalRuns, icon: Icons.directions_run_rounded)),
-                ],
-              ),
-            ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 20)),
+            // ── 요약 카드(화면 폭에 따라 자동 레이아웃: 좁으면 2열, 넓으면 3열)
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final w = constraints.maxWidth;
 
-          // 요약 차트 섹션
-          const SliverToBoxAdapter(child: SectionTitlePadding("요약 차트")),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  WeeklyDistanceChart(
-                    title: "주간 거리",
-                    subtitle: "지난 주 대비 +12%",
-                    values: [0.3, 0.6, 0.2, 0.8, 0.5, 0.7, 0.4],
-                    labels: ['월','화','수','목','금','토','일'],
-                  ),
-                  const SizedBox(height: 12),
-                  WeeklyDistanceChart(
-                    title: "주간 시간",
-                    subtitle: "지난 주 대비 +8%",
-                    values: [0.2, 0.4, 0.3, 0.7, 0.6, 0.8, 0.5],
-                    labels: ['월','화','수','목','금','토','일'],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 20)),
-
-          // Top 루트 섹션
-          const SliverToBoxAdapter(child: SectionTitlePadding("Top 루트")),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            sliver: SliverList.separated(
-              itemCount: 3,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final rank = index + 1;
-                return TopRouteCard(
-                  rank: rank,
-                  title: "루트 $rank",
-                  subtitle: "2025.09.0$rank",
-                  distanceText: "5.$rank km",
-                  durationText: "2$rank:1$rank",
-                  paceText: "5:0$rank/km",
-                  tags: const ["러닝", "야간"],
-                  onTap: () => _notImplemented(context, "상세 연결은 나중에"),
-                );
+                if (w < 380) {
+                  // 좁은 화면: 2열(2개 + 1개)
+                  return Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(child: SummaryCard(icon: Icons.route_rounded, label: "총 거리", value: _totalDistance)),
+                          const SizedBox(width: 12),
+                          Expanded(child: SummaryCard(icon: Icons.timer_outlined, label: "총 시간", value: _totalTime)),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      SummaryCard(icon: Icons.speed_rounded, label: "평균 페이스", value: _avgPace),
+                    ],
+                  );
+                } else {
+                  // 넓은 화면: 3열 고정
+                  return Row(
+                    children: [
+                      Expanded(child: SummaryCard(icon: Icons.route_rounded, label: "총 거리", value: _totalDistance)),
+                      const SizedBox(width: 12),
+                      Expanded(child: SummaryCard(icon: Icons.timer_outlined, label: "총 시간", value: _totalTime)),
+                      const SizedBox(width: 12),
+                      Expanded(child: SummaryCard(icon: Icons.speed_rounded, label: "평균 페이스", value: _avgPace)),
+                    ],
+                  );
+                }
               },
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+
+            // ── 추세 차트 카드 (라인)
+            TrendCard(
+              title: "러닝 추세",
+              subtitle: _isWeekly ? "일별 거리(km)" : "일별 거리(km)",
+              periodLabel: _periodLabel,
+              values: _series,
+              xDivisions: _isWeekly ? 7 : 6,
+            ),
+            const SizedBox(height: 16),
+
+            // ── 세션 요약
+            Text("세션 요약", style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            const SplitTile(title: "2025-09-21 (일)", meta: "7.8 km · 42:10 · 5'24\"/km"),
+            const SizedBox(height: 8),
+            const SplitTile(title: "2025-09-19 (금)", meta: "10.2 km · 56:31 · 5'32\"/km"),
+            const SizedBox(height: 8),
+            const SplitTile(title: "2025-09-17 (수)", meta: "5.0 km · 25:38 · 5'08\"/km"),
+          ],
+        ),
       ),
     );
   }
-}
-
-void _notImplemented(BuildContext context, String msg) {
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 }

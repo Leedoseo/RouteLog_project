@@ -1,78 +1,166 @@
 import 'package:flutter/material.dart';
 
-// 앱 전역 테마
-ThemeData buildAppTheme() {
-  const seed = Color(0xFF3A7AFE);
-  final scheme = ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.light);
+const _seed = Color(0xFF3E7BFA);
+
+/// 라이트 테마
+ThemeData buildLightTheme() =>
+    _buildTheme(ColorScheme.fromSeed(seedColor: _seed, brightness: Brightness.light), isDark: false);
+
+/// 다크 테마
+ThemeData buildDarkTheme() =>
+    _buildTheme(ColorScheme.fromSeed(seedColor: _seed, brightness: Brightness.dark), isDark: true);
+
+/// 공통 빌더 (라이트/다크 차이는 ColorScheme와 타이포 베이스만 다름)
+ThemeData _buildTheme(ColorScheme cs, {required bool isDark}) {
+  final baseTypography = isDark ? Typography.material2021().white : Typography.material2021().black;
+
+  final textTheme = baseTypography.apply(
+    bodyColor: cs.onSurface,
+    displayColor: cs.onSurface,
+  ).copyWith(
+    // 버튼/칩 가독성 살짝 강화
+    labelLarge: const TextStyle(fontWeight: FontWeight.w700),
+  );
+
+  final appBarTitle = (isDark ? Typography.whiteMountainView : Typography.blackMountainView)
+      .titleLarge
+      ?.copyWith(fontWeight: FontWeight.w800, color: cs.onSurface);
 
   return ThemeData(
     useMaterial3: true,
-    colorScheme: scheme,
+    colorScheme: cs,
+    textTheme: textTheme,
 
-    // AppBar: 좌측 정렬, 그림자 제거, 표면색/전경색 일치
+    // AppBar
     appBarTheme: AppBarTheme(
+      elevation: 0,
+      backgroundColor: cs.surface,
+      foregroundColor: cs.onSurface,
+      surfaceTintColor: Colors.transparent,
       centerTitle: false,
-      elevation: 0,
-      backgroundColor: scheme.surface,
-      foregroundColor: scheme.onSurface,
+      titleTextStyle: appBarTitle,
+      iconTheme: IconThemeData(color: cs.onSurfaceVariant),
     ),
 
-    // Card: 기본 마진 제거 + 둥근 모서리 + 그림자 제거
-    cardTheme: CardTheme(
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    ),
-
-    // BottomSheet: 우리가 쓰는 편집 시트 라운드 모양과 일치
-    bottomSheetTheme: const BottomSheetThemeData(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      showDragHandle: false,
-    ),
-
-    // TextField: 기본 라운드 12
+    // Inputs
     inputDecorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      isDense: true,
+      filled: true,
+      fillColor: cs.surfaceContainerHighest,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: cs.outlineVariant),
+      ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: scheme.outlineVariant),
+        borderSide: BorderSide(color: cs.outlineVariant),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: scheme.primary),
+        borderSide: BorderSide(color: cs.primary, width: 1.6),
       ),
+      prefixIconColor: cs.onSurfaceVariant,
+      suffixIconColor: cs.onSurfaceVariant,
     ),
 
-    // 버튼: 높이/라운드 통일
+    // Cards
+    cardTheme: CardTheme(
+      color: cs.surface,
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+    ),
+
+    // Buttons
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         minimumSize: const Size.fromHeight(44),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        side: BorderSide(color: cs.outlineVariant),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         minimumSize: const Size.fromHeight(44),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        elevation: 1,
+        minimumSize: const Size.fromHeight(44),
       ),
     ),
 
-    // 탭: 편집 시트 탭바 가독성 향상
-    tabBarTheme: const TabBarTheme(
-      indicatorSize: TabBarIndicatorSize.tab,
-      labelStyle: TextStyle(fontWeight: FontWeight.w700),
-      unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w500),
+    // Chip
+    chipTheme: ChipThemeData(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      side: BorderSide(color: cs.outlineVariant),
+      backgroundColor: cs.surfaceContainerHigh,
+      labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
     ),
 
-    // 스낵바: 떠있는 형태(우리가 많이 씀)
-    snackBarTheme: const SnackBarThemeData(
+    // ListTile
+    listTileTheme: const ListTileThemeData(
+      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      minVerticalPadding: 8,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+      ),
+    ),
+
+    // Divider
+    dividerTheme: DividerThemeData(color: cs.outlineVariant, space: 1, thickness: 1),
+
+    // SnackBar
+    snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
+      backgroundColor: cs.surfaceContainerHigh,
+      contentTextStyle: TextStyle(color: cs.onSurface),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     ),
 
-    // Divider: outlineVariant로 미세한 경계
-    dividerTheme: DividerThemeData(color: scheme.outlineVariant),
+    // Modal / Dialog (통일)
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: cs.surface,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      showDragHandle: true,
+      dragHandleColor: cs.outline,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+    ),
+    dialogTheme: DialogTheme(
+      backgroundColor: cs.surface,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+
+    // Nav transitions
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+        TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+      },
+    ),
+
+    // 배경 계열(다크 이슈 방지 + 라이트도 톤 고정)
+    scaffoldBackgroundColor: cs.surface,
+    canvasColor: cs.surface,
+    dialogBackgroundColor: cs.surface,
+
+    // 잉크 이펙트(라운드에 맞춰 잘림)
+    splashFactory: InkSparkle.splashFactory,
   );
 }

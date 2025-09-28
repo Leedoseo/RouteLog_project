@@ -7,3 +7,5 @@ export 'record_hud.dart';
 export 'auto_pause_dialog.dart';
 export 'record_finish_screen.dart';
 export 'record_banner.dart';
+export 'finish_session_sheet.dart';
+export 'record_timer_gauge_card.dart';

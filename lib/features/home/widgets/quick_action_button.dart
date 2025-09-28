@@ -1,36 +1,51 @@
 import 'package:flutter/material.dart';
 
-// 기록 시작 / 내 루트 / 통계 3열 버튼
 class QuickActionButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final VoidCallback onTap;
   const QuickActionButton({
-    required this.label,
+    super.key,
     required this.icon,
-    required this.onTap,
+    required this.label,
+    required this.onTap
   });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Ink(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: cs.primaryContainer,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: cs.outlineVariant),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 28),
-            const SizedBox(height: 8),
-            Text(label, style: Theme.of(context).textTheme.labelLarge),
-          ],
+    final t = Theme.of(context).textTheme;
+    final r = BorderRadius.circular(14);
+
+    return Material(
+      color: cs.surface,
+      shape: RoundedRectangleBorder(side: BorderSide(color: cs.outlineVariant), borderRadius: r),
+      child: InkWell(
+        borderRadius: r,
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 20, color: cs.primary),
+              const SizedBox(width: 8),
+              ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 44),
+                child: Center(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                      textScaler: const TextScaler.linear(1.0), // 라벨만 스케일 고정 (선택)
+                      style: t.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+                    )
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
