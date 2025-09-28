@@ -1,4 +1,3 @@
-// lib/features/record/record_screen.dart
 import 'package:flutter/material.dart';
 import 'package:routelog_project/features/record/record_finish_sheet.dart';
 import 'package:routelog_project/features/record/widgets/widgets.dart'
@@ -7,6 +6,8 @@ import 'package:routelog_project/core/widgets/widgets.dart' show PermissionBanne
 
 import 'package:routelog_project/features/record/widgets/record_timer_gauge_card.dart';
 import 'package:routelog_project/features/record/widgets/map_placeholder.dart';
+
+import 'package:routelog_project/core/data/firebase_repository.dart';
 
 class RecordScreen extends StatelessWidget {
   const RecordScreen({super.key});
@@ -25,9 +26,9 @@ class RecordScreen extends StatelessWidget {
 
     // --- 레이아웃 파라미터 ---
     const double baseButtonHeight = 72;
-    const double buttonHeight = 36;     // ← 절반
+    const double buttonHeight = 36;
     const double baseMapHeight = 220;
-    final double mapHeight = baseMapHeight + (baseButtonHeight - buttonHeight); // 256
+    final double mapHeight = baseMapHeight + (baseButtonHeight - buttonHeight);
 
     return Scaffold(
       appBar: AppBar(
@@ -67,7 +68,7 @@ class RecordScreen extends StatelessWidget {
 
                   const SizedBox(height: 8),
 
-                  RecordTimerGaugeCard(
+                  const RecordTimerGaugeCard(
                     progress: progress,
                     durationText: durationText,
                     distanceText: distanceText,
@@ -86,6 +87,14 @@ class RecordScreen extends StatelessWidget {
                 onStart: () => _notImplemented(context, "기록 시작(미구현)"),
                 onPause: () => _notImplemented(context, "일시정지 (미구현)"),
                 onStop: () async {
+                  // 세션 저장 (임시 값)
+                  await FirebaseRepository.instance.addSession(
+                    distanceKm: 5.2,
+                    durationSec: 28 * 60 + 12,
+                    avgPaceSecPerKm: 5 * 60 + 25, // 5'25"/km
+                    avgHr: 148,
+                  );
+
                   await showRecordFinishSheet(
                     context,
                     distanceText: "5.20 km",

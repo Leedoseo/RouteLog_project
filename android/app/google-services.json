@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "71661797357",
+    "project_id": "routelog-project",
+    "storage_bucket": "routelog-project.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:71661797357:android:2b005d17593ab37ca9b1e4",
+        "android_client_info": {
+          "package_name": "com.example.routelog_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9mr66bphRIAOGAqVMVISow4J2ZshqCAo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:71661797357:android:12765a989ba7191fa9b1e4",
+        "android_client_info": {
+          "package_name": "com.yourcompany.routelog"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9mr66bphRIAOGAqVMVISow4J2ZshqCAo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
