@@ -9,3 +9,7 @@ export 'stat_kpi_card.dart';
 export 'sparkline_card.dart';
 export 'distribution_card.dart';
 export 'recent_session_tile.dart';
+export 'segment_chip.dart';
+export 'summary_card.dart';
+export 'mini_trend_chart.dart';
+export 'split_tile.dart';
