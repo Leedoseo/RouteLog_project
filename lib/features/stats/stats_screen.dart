@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/core/decoration/app_background.dart';
 import 'package:routelog_project/features/stats/widgets/widgets.dart';
+import 'package:routelog_project/core/navigation/app_router.dart';
 
 class StatsScreen extends StatefulWidget {
   const StatsScreen({super.key});
@@ -139,14 +140,29 @@ class _StatsScreenState extends State<StatsScreen> {
             ),
             const SizedBox(height: 16),
 
-            // ── 세션 요약
+            // ── 세션 요약 (각 항목 탭 → 상세 이동: Named route)
             Text("세션 요약", style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
-            const SplitTile(title: "2025-09-21 (일)", meta: "7.8 km · 42:10 · 5'24\"/km"),
+
+            InkWell(
+              onTap: () => Navigator.pushNamed(context, Routes.routeDetail('mock_2025-09-21')),
+              borderRadius: BorderRadius.circular(12),
+              child: const SplitTile(title: "2025-09-21 (일)", meta: "7.8 km · 42:10 · 5'24\"/km"),
+            ),
             const SizedBox(height: 8),
-            const SplitTile(title: "2025-09-19 (금)", meta: "10.2 km · 56:31 · 5'32\"/km"),
+
+            InkWell(
+              onTap: () => Navigator.pushNamed(context, Routes.routeDetail('mock_2025-09-19')),
+              borderRadius: BorderRadius.circular(12),
+              child: const SplitTile(title: "2025-09-19 (금)", meta: "10.2 km · 56:31 · 5'32\"/km"),
+            ),
             const SizedBox(height: 8),
-            const SplitTile(title: "2025-09-17 (수)", meta: "5.0 km · 25:38 · 5'08\"/km"),
+
+            InkWell(
+              onTap: () => Navigator.pushNamed(context, Routes.routeDetail('mock_2025-09-17')),
+              borderRadius: BorderRadius.circular(12),
+              child: const SplitTile(title: "2025-09-17 (수)", meta: "5.0 km · 25:38 · 5'08\"/km"),
+            ),
           ],
         ),
       ),
