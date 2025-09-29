@@ -3,6 +3,7 @@ import 'package:routelog_project/features/routes/route_actions_sheet.dart';
 import 'package:routelog_project/features/routes/widgets/widgets.dart' show RouteListCard;
 import 'package:routelog_project/features/search/widgets/widgets.dart';
 import 'package:routelog_project/core/widgets/widgets.dart';
+import 'package:routelog_project/core/navigation/app_router.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -14,8 +15,8 @@ class SearchScreen extends StatefulWidget {
 class SearchScreenState extends State<SearchScreen> {
   final TextEditingController _controller = TextEditingController();
 
-  // 최근 검색 (간단 메모리 보관, 실제 앱에선 로컬 저장소 사용 예정
-  final List<String> _recent = ["한강", "퇴근길", "러닝",];
+  // 최근 검색 (간단 메모리 보관, 실제 앱에선 로컬 저장소 사용 예정)
+  final List<String> _recent = ["한강", "퇴근길", "러닝"];
   // 추천 태그(목업)
   final List<String> _suggested = const ["강변", "오르막", "주말", "아침", "야간"];
 
@@ -43,7 +44,7 @@ class SearchScreenState extends State<SearchScreen> {
       if (_recent.length > 8) _recent.removeLast();
     });
 
-    // 실제 검색은 나중에
+    // 실제 검색 로직은 이후 단계에서 연결
     _notImplemented('검색은 나중에 연결: "$k"');
   }
 
@@ -179,11 +180,12 @@ class SearchScreenState extends State<SearchScreen> {
                   // RouteListCard 재사용 (실제 데이터 연결은 나중에)
                   final title = "$_keyword 루트 ${index + 1}";
                   final subtitle = "- km  -  - m  -  2025.09.0${(index % 7) + 1}";
+                  final mockId = "search_${index + 1}";
 
                   return RouteListCard(
                     title: title,
                     subtitle: subtitle,
-                    onTap: () => _notImplemented("상세 연결은 나중에"),
+                    onTap: () => Navigator.pushNamed(context, Routes.routeDetail(mockId)),
                     onMoreTap: () => showRouteActionsSheet(context),
                   );
                 },

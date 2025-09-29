@@ -4,11 +4,13 @@ import 'package:routelog_project/features/home/widgets/home_hero_dashboard.dart'
 import 'package:routelog_project/features/home/widgets/mini_stat.dart';
 import 'package:routelog_project/features/home/widgets/quick_action_button.dart';
 import 'package:routelog_project/features/home/widgets/recent_route_tile.dart';
+import 'package:routelog_project/core/navigation/app_router.dart';
 
-import 'package:routelog_project/features/record/record_screen.dart';
-import 'package:routelog_project/features/routes/routes_list_screen.dart';
-import 'package:routelog_project/features/settings/settings_screen.dart';
-import 'package:routelog_project/features/stats/stats_screen.dart';
+// 기존 direct push용 import 제거:
+// import 'package:routelog_project/features/record/record_screen.dart';
+// import 'package:routelog_project/features/routes/routes_list_screen.dart';
+// import 'package:routelog_project/features/settings/settings_screen.dart';
+// import 'package:routelog_project/features/stats/stats_screen.dart';
 // import 'package:routelog_project/features/routes/route_export_sheet.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -24,8 +26,8 @@ class HomeScreen extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {
-              // 알림 페이지가 있으면 여기서 push
-              // Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NotificationsScreen()));
+              // 알림 페이지가 있으면 여기서 pushNamed로 연결하면 됨
+              // Navigator.pushNamed(context, Routes.notifications);
             },
             icon: const Icon(Icons.notifications_none_rounded),
           ),
@@ -50,7 +52,7 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // ── 빠른 액션(직접 push로 내비)
+            // ── 빠른 액션 (Named routes로 전환)
             Row(
               children: [
                 Expanded(
@@ -58,9 +60,7 @@ class HomeScreen extends StatelessWidget {
                     icon: Icons.play_arrow_rounded,
                     label: '기록 시작',
                     onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const RecordScreen()), // 반영 안된거 수정
-                      );
+                      Navigator.pushNamed(context, Routes.record);
                     },
                   ),
                 ),
@@ -70,9 +70,9 @@ class HomeScreen extends StatelessWidget {
                     icon: Icons.search_rounded,
                     label: '루트 검색',
                     onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const RoutesListScreen()),
-                      );
+                      // 검색 화면이 따로 있으면 Routes.search로, 현재는 루트 리스트로 이동 원하면 Routes.routes
+                      // 필요에 따라 아래 한 줄을 Routes.search로 바꿔도 됨.
+                      Navigator.pushNamed(context, Routes.routes);
                     },
                   ),
                 ),
@@ -91,9 +91,9 @@ class HomeScreen extends StatelessWidget {
                   title: '강변 러닝 코스 $i',
                   meta: '5.0km · 25분 · 5\'15"/km',
                   onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const RoutesListScreen()),
-                    );
+                    // 실제라면 특정 id로 상세로 가는 게 자연스러움: Navigator.pushNamed(context, Routes.routeDetail(id))
+                    // 지금은 더미라 목록으로 연결 유지
+                    Navigator.pushNamed(context, Routes.routes);
                   },
                 ),
               );
@@ -102,20 +102,19 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
 
-      // ── 하단 탭 (홈 탭은 NO-OP, 나머지는 직접 push)
+      // ── 하단 탭 (홈 탭은 NO-OP, 나머지는 Named routes)
       bottomNavigationBar: _HomeBottomBar(
         onHome: () {
           // 홈은 현재 화면이므로 아무 것도 하지 않음 (무한 푸시 방지)
         },
         onRoutes: () {
-          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const RoutesListScreen()));
+          Navigator.pushNamed(context, Routes.routes);
         },
         onStats: () {
-          // 통계 화면이 있다면 여기에 push
-          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const StatsScreen()));
+          Navigator.pushNamed(context, Routes.stats);
         },
         onSettings: () {
-          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
+          Navigator.pushNamed(context, Routes.settings);
         },
       ),
     );

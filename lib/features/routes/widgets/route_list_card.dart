@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 class RouteListCard extends StatelessWidget {
   final String title;
   final String subtitle;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final VoidCallback? onMoreTap;
 
   const RouteListCard({
     super.key,
     required this.title,
     required this.subtitle,
-    required this.onTap,
+    this.onTap,
     this.onMoreTap,
   });
 
@@ -26,7 +26,13 @@ class RouteListCard extends StatelessWidget {
         side: BorderSide(color: cs.outlineVariant),
       ),
       child: InkWell(
-        onTap: onTap,
+        onTap: onTap ??
+                () {
+              // 기본 동작(개발 편의용): 콜백 없으면 안내만
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('루트 상세로 이동 연결 필요')),
+              );
+            },
         child: Column(
           children: [
             // 상단 썸네일(플레이스홀더 - 리스트용은 12:5 비율)
@@ -39,7 +45,7 @@ class RouteListCard extends StatelessWidget {
                     end: Alignment.bottomRight,
                     colors: [cs.primaryContainer, cs.secondaryContainer],
                   ),
-                  border: Border( // 아래쪽 구분선
+                  border: Border(
                     bottom: BorderSide(color: cs.outlineVariant),
                   ),
                 ),

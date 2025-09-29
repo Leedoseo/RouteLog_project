@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/core/decoration/app_background.dart';
 import 'package:routelog_project/features/routes/widgets/widgets.dart';
-import 'package:routelog_project/features/routes/route_detail_screen.dart';
+import 'package:routelog_project/core/navigation/app_router.dart';
 
 class RoutesListScreen extends StatelessWidget {
   const RoutesListScreen({super.key});
@@ -37,20 +37,17 @@ class RoutesListScreen extends StatelessWidget {
 
             // 목업 데이터 3개
             ...List.generate(3, (i) {
+              final title = '강변 러닝 코스 ${i + 1}';
               return Padding(
                 padding: EdgeInsets.only(top: i == 0 ? 0 : 8),
                 child: RouteListTile(
-                  title: '강변 러닝 코스 ${i + 1}',
+                  title: title,
                   meta: '5.2km · 28분 · 5\'25"/km',
                   distanceText: '5.2km',
                   paceText: '5\'25"/km',
                   isFavorited: i == 0,
                   onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => RouteDetailScreen(title: '강변 러닝 코스 ${i + 1}'),
-                      ),
-                    );
+                    Navigator.pushNamed(context, Routes.routeDetail('mock_${i + 1}'));
                   },
                   onExport: () {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('내보내기(목업)')));
