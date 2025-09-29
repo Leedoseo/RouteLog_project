@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math';
-import '../../models/models.dart';
-import '../i_route_repository.dart';
+import 'package:routelog_project/core/data/models/mdels.dart';
+import 'package:routelog_project/core/data/repository/i_route_repository.dart';
 
 class MockRouteRepository implements IRouteRepository {
   final Map<String, RouteLog> _store = {};
