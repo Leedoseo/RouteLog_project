@@ -7,6 +7,7 @@ import 'package:routelog_project/features/settings/settings_screen.dart';
 import 'package:routelog_project/features/record/record_screen.dart';
 import 'package:routelog_project/features/onboarding/onboarding_screen.dart';
 import 'package:routelog_project/features/routes/route_detail_screen.dart';
+import 'package:routelog_project/features/routes/routes_bindings.dart';
 
 class Routes {
   static const home = '/';
@@ -40,7 +41,7 @@ class AppRouter {
       case Routes.search:
         return _fade(const SearchScreen());
       case Routes.routes:
-        return _fade(const RoutesListScreen());
+        return _fade(const RoutesBindings());
       case Routes.stats:
         return _fade(const StatsScreen());
       case Routes.settings:
