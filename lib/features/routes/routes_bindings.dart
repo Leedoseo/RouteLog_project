@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/core/utils/notifier_provider.dart';
-import 'package:routelog_project/core/data/repository/mock/mock_route_repository.dart';
+import 'package:routelog_project/core/data/repository/repo_registry.dart';
 import 'package:routelog_project/features/routes/state/routes_controller.dart';
 import 'package:routelog_project/features/routes/routes_list_screen.dart';
 
@@ -17,8 +17,7 @@ class _RoutesBindingsState extends State<RoutesBindings> {
   @override
   void initState() {
     super.initState();
-    controller = RoutesController(repo: MockRouteRepository());
-    // 최초 로드
+    controller = RoutesController(repo: RepoRegistry.I.routeRepo);
     controller.load();
   }
 

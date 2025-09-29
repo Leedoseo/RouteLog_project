@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/features/home/home_screen.dart';
 import 'package:routelog_project/features/search/search_screen.dart';
-import 'package:routelog_project/features/routes/routes_list_screen.dart';
 import 'package:routelog_project/features/stats/stats_screen.dart';
 import 'package:routelog_project/features/settings/settings_screen.dart';
 import 'package:routelog_project/features/record/record_screen.dart';
 import 'package:routelog_project/features/onboarding/onboarding_screen.dart';
-import 'package:routelog_project/features/routes/route_detail_screen.dart';
 import 'package:routelog_project/features/routes/routes_bindings.dart';
+import 'package:routelog_project/features/routes/route_detail_bindings.dart';
 
 class Routes {
   static const home = '/';
@@ -32,7 +31,7 @@ class AppRouter {
     final match = Routes._routeDetailRegex.firstMatch(name);
     if (match != null) {
       final id = match.group(1)!;
-      return _fade(RouteDetailScreen(routeId: id));
+      return _fade(RouteDetailBindings(routeId: id));
     }
 
     switch (name) {
