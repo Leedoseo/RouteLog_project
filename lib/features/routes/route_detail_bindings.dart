@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:routelog_project/core/data/repository/repo_registry.dart';
 import 'package:routelog_project/core/data/models/route_log.dart';
+import 'package:routelog_project/core/data/repository/repo_registry.dart';
 import 'package:routelog_project/features/routes/route_detail_screen.dart';
+
+// 선택: M8 컴포넌트로 상태 표시
+import 'package:routelog_project/core/widgets/async_view.dart';
+import 'package:routelog_project/core/widgets/error_view.dart';
 
 class RouteDetailBindings extends StatefulWidget {
   const RouteDetailBindings({super.key, required this.routeId});
@@ -12,39 +16,48 @@ class RouteDetailBindings extends StatefulWidget {
 }
 
 class _RouteDetailBindingsState extends State<RouteDetailBindings> {
-  Future<RouteLog?>? _future;
+  RouteLog? _log;
+  Object? _error;
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    _future = RepoRegistry.I.routeRepo.getById(widget.routeId);
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    try {
+      _log = await RepoRegistry.I.routeRepo.getById(widget.routeId);
+      _error = null;
+    } catch (e) {
+      _error = e;
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<RouteLog?>(
-      future: _future,
-      builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    return AsyncView(
+      loading: _loading,
+      error: _error,
+      errorView: ErrorView(
+        message: "루트를 불러오지 못했어요.",
+        onRetry: _load,
+      ),
+      childBuilder: (_) {
+        final log = _log;
+        if (log == null) {
+          // not found 케이스
+          return const Scaffold(
+            body: Center(child: Text('루트를 찾을 수 없어요')),
+          );
         }
-        final data = snap.data;
-        if (data == null) {
-          return const _NotFound();
-        }
-        return RouteDetailScreen.fromModel(model: data);
+        // ✅ 핵심: positional 인자로 전달
+        return RouteDetailScreen.fromModel(log);
       },
-    );
-  }
-}
-
-class _NotFound extends StatelessWidget {
-  const _NotFound();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text('해당 루트를 찾을 수 없습니다.')),
     );
   }
 }
