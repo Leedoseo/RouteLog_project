@@ -25,14 +25,9 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>산책/러닝 기록을 위해 앱 사용 중 위치 접근이 필요합니다.</string>
 
-	<!-- (선택) 항상+백그라운드까지 할 경우, 다음 두 키를 추후 추가
+	<!-- 항상+백그라운드 사용 -->
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>백그라운드에서도 러닝 경로 기록을 위해 위치 접근이 필요합니다.</string>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>location</string>
-	</array>
-	-->
+    <string>백그라운드에서도 경로를 기록하려면 항상 위치 접근이 필요합니다.</string>
 
 	<!-- (필수) Google Maps iOS SDK API Key -->
 	<key>GMSApiKey</key>
