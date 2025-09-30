@@ -4,7 +4,9 @@ import 'package:routelog_project/features/record/widgets/widgets.dart'
     show RecordStatusBadge, ControlBar;
 import 'package:routelog_project/core/widgets/widgets.dart' show PermissionBanner;
 import 'package:routelog_project/features/record/widgets/record_timer_gauge_card.dart';
-import 'package:routelog_project/features/record/widgets/map_placeholder.dart';
+import 'package:routelog_project/features/record/widgets/record_google_map.dart';
+import 'package:routelog_project/core/utils/notifier_provider.dart';
+import 'package:routelog_project/features/record/state/record_controller.dart';
 import 'package:routelog_project/core/navigation/app_router.dart';
 
 class RecordScreen extends StatelessWidget {
@@ -13,105 +15,154 @@ class RecordScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const mockLocationGranted = false;
+    final ctrl = NotifierProvider.of<RecordController>(context);
 
-    // --- 목업 값 ---
-    const String durationText = "--:--";
-    const String distanceText = "-- km";
-    const String paceText = "-- /km";
-    const String heartRateText = "-- bpm";
-    const double progress = 0.0;
-
-    // --- 레이아웃 파라미터 ---
+    // 레이아웃 파라미터
     const double baseButtonHeight = 72;
-    const double buttonHeight = 36; // ← 절반
+    const double buttonHeight = 36;
     const double baseMapHeight = 220;
-    final double mapHeight =
-        baseMapHeight + (baseButtonHeight - buttonHeight); // 256
+    final double mapHeight = baseMapHeight + (baseButtonHeight - buttonHeight);
+
+    String durText(Duration d) {
+      final h = d.inHours;
+      final m = d.inMinutes % 60;
+      final s = d.inSeconds % 60;
+      if (h > 0) {
+        return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+      }
+      return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    }
+
+    String kmText(double m) {
+      final km = m / 1000.0;
+      return km >= 10 ? '${km.toStringAsFixed(0)} km' : '${km.toStringAsFixed(2)} km';
+    }
+
+    String paceText(double? secPerKm) {
+      if (secPerKm == null || secPerKm.isNaN || secPerKm.isInfinite) return '-- /km';
+      final m = secPerKm ~/ 60;
+      final s = (secPerKm % 60).round().toString().padLeft(2, '0');
+      return "$m'$s\"/km";
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("기록"),
         actions: [
           IconButton(
-            onPressed: () => _notImplemented(context, "설정/권한 안내 (미구현)"),
+            onPressed: () => _snack(context, "설정/권한 안내 (미구현)"),
             icon: const Icon(Icons.info_outline),
             tooltip: "도움말",
           ),
         ],
       ),
 
-      // 상단 콘텐츠는 스크롤, 하단 컨트롤바는 고정
       body: SafeArea(
-        child: Column(
-          children: [
-            // 상단 영역 전체를 ListView로 감싸 스크롤 가능하게
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                children: [
-                  const RecordStatusBadge(statusText: "대기중"),
-                  const SizedBox(height: 8),
+        child: AnimatedBuilder(
+          animation: ctrl,
+          builder: (context, _) {
+            final hasPermission = ctrl.permission == LocationPermissionState.granted;
 
-                  MapPlaceholder(height: mapHeight),
+            final statusLabel = () {
+              switch (ctrl.status) {
+                case RecordStatus.idle: return "대기중";
+                case RecordStatus.recording: return "기록 중";
+                case RecordStatus.paused: return "일시정지";
+                case RecordStatus.finished: return "완료";
+              }
+            }();
 
-                  if (!mockLocationGranted) ...[
-                    const SizedBox(height: 8),
-                    PermissionBanner(
-                      title: "위치 권한이 필요해요",
-                      message: "실시간 기록을 위해 위치 접근 권한을 허용해 주세요",
-                      actionLabel: "설정",
-                      onAction: () =>
-                          _notImplemented(context, "권한 요청/이동은 나중에 연결"),
-                    ),
-                  ],
+            final durationText = durText(ctrl.elapsed);
+            final distanceText = kmText(ctrl.distanceMeters);
+            final pace = paceText(ctrl.paceSecPerKm);
 
-                  const SizedBox(height: 8),
+            return Column(
+              children: [
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                    children: [
+                      RecordStatusBadge(statusText: statusLabel),
+                      const SizedBox(height: 8),
 
-                  const RecordTimerGaugeCard(
-                    progress: progress,
-                    durationText: durationText,
-                    distanceText: distanceText,
-                    paceText: paceText,
-                    heartRateText: heartRateText,
+                      // 구글맵
+                      RecordGoogleMap(
+                        height: mapHeight,
+                        path: ctrl.path,
+                        followUser: true,
+                      ),
+
+                      if (!hasPermission ||
+                          ctrl.permission == LocationPermissionState.serviceDisabled) ...[
+                        const SizedBox(height: 8),
+                        PermissionBanner(
+                          title: !hasPermission
+                              ? "위치 권한이 필요해요"
+                              : "위치 서비스가 꺼져 있어요",
+                          message: !hasPermission
+                              ? "실시간 기록을 위해 위치 접근 권한을 허용해 주세요"
+                              : "설정에서 위치 서비스를 켜 주세요",
+                          actionLabel: "설정",
+                          onAction: () => _snack(context, "권한/서비스 설정 화면 이동은 다음 단계에서 연결"),
+                        ),
+                      ],
+
+                      const SizedBox(height: 8),
+
+                      // 타이머+게이지 카드
+                      RecordTimerGaugeCard(
+                        progress: 0, // 목표 대비 프로그레스는 아직 없음
+                        durationText: durationText,
+                        distanceText: distanceText,
+                        paceText: pace,
+                        heartRateText: "-- bpm", // 심박은 아직 미연동
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
 
-            // 하단 컨트롤바(고정)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: ControlBar(
-                buttonHeight: buttonHeight,
-                onStart: () => _notImplemented(context, "기록 시작(미구현)"),
-                onPause: () => _notImplemented(context, "일시정지 (미구현)"),
-                onStop: () async {
-                  // 기록 종료 → 요약 시트
-                  await showRecordFinishSheet(
-                    context,
-                    distanceText: "5.20 km",
-                    durationText: "28:12",
-                    paceText: "5:25 /km",
-                  );
-
-                  // ❗ showRecordFinishSheet가 현재 Future<void> 라서 반환값이 없음.
-                  //    아래 처리는 “시트 닫힌 뒤 항상 상세로 이동”하는 임시 로직.
-                  //    *원한다면* showRecordFinishSheet가 Future<bool>을 반환하게 바꾼 뒤:
-                  //    final saved = await showRecordFinishSheet(...);
-                  //    if (saved == true) { Navigator.pushNamed(...); }
-                  if (!context.mounted) return;
-                  Navigator.pushNamed(context, Routes.routeDetail('record_mock_1'));
-                },
-              ),
-            ),
-          ],
+                // 하단 컨트롤바
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: ControlBar(
+                    buttonHeight: buttonHeight,
+                    onStart: () async {
+                      if (ctrl.status == RecordStatus.paused) {
+                        await ctrl.resume();
+                      } else if (ctrl.status == RecordStatus.recording) {
+                        // noop
+                      } else {
+                        await ctrl.start();
+                      }
+                    },
+                    onPause: () async {
+                      if (ctrl.status == RecordStatus.recording) {
+                        await ctrl.pause();
+                      }
+                    },
+                    onStop: () async {
+                      await ctrl.stop();
+                      await showRecordFinishSheet(
+                        context,
+                        distanceText: distanceText,
+                        durationText: durationText,
+                        paceText: pace,
+                      );
+                      if (!context.mounted) return;
+                      // TODO: stop 후 실제로 저장하고 상세로 연결(지금은 목업 id)
+                      Navigator.pushNamed(context, Routes.routeDetail('record_mock_1'));
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 }
 
-void _notImplemented(BuildContext context, String msg) {
+void _snack(BuildContext context, String msg) {
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 }
