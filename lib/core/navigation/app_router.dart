@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/features/home/home_screen.dart';
-import 'package:routelog_project/features/stats/stats_screen.dart';
 import 'package:routelog_project/features/settings/settings_screen.dart';
 import 'package:routelog_project/features/record/record_screen.dart';
 import 'package:routelog_project/features/onboarding/onboarding_screen.dart';
 import 'package:routelog_project/features/routes/routes_bindings.dart';
 import 'package:routelog_project/features/routes/route_detail_bindings.dart';
 import 'package:routelog_project/features/search/search_bindings.dart';
+import 'package:routelog_project/features/stats/stats_bindings.dart';
 
 class Routes {
   static const home = '/';
@@ -42,7 +42,7 @@ class AppRouter {
       case Routes.routes:
         return _fade(const RoutesBindings());
       case Routes.stats:
-        return _fade(const StatsScreen());
+        return _fade(const StatsBindings());
       case Routes.settings:
         return _fade(const SettingsScreen());
       case Routes.onboarding:
