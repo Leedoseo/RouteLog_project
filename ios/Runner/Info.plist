@@ -34,7 +34,7 @@
 	</array>
 	-->
 
-	<!-- ✅ (필수) Google Maps iOS SDK API Key -->
+	<!-- (필수) Google Maps iOS SDK API Key -->
 	<key>GMSApiKey</key>
 	<string>c0527dbed45b3497990ec3fcf3961660f6873f308608d053c572ab9365ffaf2b</string>
 
