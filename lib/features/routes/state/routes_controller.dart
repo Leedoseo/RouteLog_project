@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:routelog_project/core/data/models/mdels.dart';
+import 'package:routelog_project/core/data/models/models.dart';
 import 'package:routelog_project/core/data/repository/i_route_repository.dart';
 
 class RoutesController extends ChangeNotifier {

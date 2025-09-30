@@ -1,4 +1,4 @@
-import 'package:routelog_project/core/data/models/mdels.dart';
+import 'package:routelog_project/core/data/models/models.dart';
 
 abstract class IRouteRepository {
   Future<List<RouteLog>> list({

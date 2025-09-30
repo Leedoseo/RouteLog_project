@@ -8,6 +8,8 @@ import 'package:routelog_project/features/record/widgets/record_google_map.dart'
 import 'package:routelog_project/core/utils/notifier_provider.dart';
 import 'package:routelog_project/features/record/state/record_controller.dart';
 import 'package:routelog_project/core/navigation/app_router.dart';
+import 'package:routelog_project/core/data/repository/repo_registry.dart';
+import 'package:routelog_project/features/record/services/record_saver.dart';
 
 class RecordScreen extends StatelessWidget {
   const RecordScreen({super.key});
@@ -17,7 +19,6 @@ class RecordScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final ctrl = NotifierProvider.of<RecordController>(context);
 
-    // 레이아웃 파라미터
     const double baseButtonHeight = 72;
     const double buttonHeight = 36;
     const double baseMapHeight = 220;
@@ -56,7 +57,6 @@ class RecordScreen extends StatelessWidget {
           ),
         ],
       ),
-
       body: SafeArea(
         child: AnimatedBuilder(
           animation: ctrl,
@@ -84,14 +84,12 @@ class RecordScreen extends StatelessWidget {
                     children: [
                       RecordStatusBadge(statusText: statusLabel),
                       const SizedBox(height: 8),
-
-                      // 구글맵
                       RecordGoogleMap(
+                        key: const ValueKey('record_google_map'),
                         height: mapHeight,
                         path: ctrl.path,
                         followUser: true,
                       ),
-
                       if (!hasPermission ||
                           ctrl.permission == LocationPermissionState.serviceDisabled) ...[
                         const SizedBox(height: 8),
@@ -106,22 +104,17 @@ class RecordScreen extends StatelessWidget {
                           onAction: () => _snack(context, "권한/서비스 설정 화면 이동은 다음 단계에서 연결"),
                         ),
                       ],
-
                       const SizedBox(height: 8),
-
-                      // 타이머+게이지 카드
                       RecordTimerGaugeCard(
-                        progress: 0, // 목표 대비 프로그레스는 아직 없음
+                        progress: 0,
                         durationText: durationText,
                         distanceText: distanceText,
                         paceText: pace,
-                        heartRateText: "-- bpm", // 심박은 아직 미연동
+                        heartRateText: "-- bpm",
                       ),
                     ],
                   ),
                 ),
-
-                // 하단 컨트롤바
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: ControlBar(
@@ -141,7 +134,14 @@ class RecordScreen extends StatelessWidget {
                       }
                     },
                     onStop: () async {
+                      // 1) 기록 종료
                       await ctrl.stop();
+
+                      // 2) 저장
+                      final saver = RecordSaver(repo: RepoRegistry.I.routeRepo);
+                      final saved = await saver.saveFromController(ctrl);
+
+                      // 3) 완료 시트
                       await showRecordFinishSheet(
                         context,
                         distanceText: distanceText,
@@ -149,8 +149,9 @@ class RecordScreen extends StatelessWidget {
                         paceText: pace,
                       );
                       if (!context.mounted) return;
-                      // TODO: stop 후 실제로 저장하고 상세로 연결(지금은 목업 id)
-                      Navigator.pushNamed(context, Routes.routeDetail('record_mock_1'));
+
+                      // 4) 상세로 이동(실제 id)
+                      Navigator.pushNamed(context, Routes.routeDetail(saved.id));
                     },
                   ),
                 ),
