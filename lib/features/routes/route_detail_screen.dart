@@ -52,8 +52,8 @@ class RouteDetailScreen extends StatelessWidget {
               elevationText: '+64 m',
             ),
             const SizedBox(height: 12),
-            const RouteElevationCard(),
-            const SizedBox(height: 12),
+            // const RouteElevationCard(),
+            // const SizedBox(height: 12),
             RouteActionBar(
               isFavorited: false,
               onToggleFavorite: (fav) => _snack(context, fav ? '즐겨찾기 추가' : '즐겨찾기 해제'),
@@ -136,8 +136,8 @@ class _RouteDetailFromModel extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            const RouteElevationCard(),
-            const SizedBox(height: 12),
+            // const RouteElevationCard(),
+            // const SizedBox(height: 12),
 
             RouteActionBar(
               isFavorited: false,
