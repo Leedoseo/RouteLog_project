@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+
 /// WeeklyDistanceChart (목업용 간단 바 차트)
 /// - 외부 차트 라이브러리 없이 막대 차트 느낌만 구현
 /// - 값은 0.0~1.0 범위를 권장(자동 클램프)
 /// - 실제 데이터 연동은 나중에 하고, 지금은 목업 시각화만 담당
-
 class WeeklyDistanceChart extends StatelessWidget {
   final String title; // 제목
   final String? subtitle; // 부제목

@@ -11,7 +11,7 @@ class SearchHistoryChip extends StatelessWidget {
     required this.text,
     required this.onTap,
     this.onDelete,
-    this.dense = false
+    this.dense = false,
   });
 
   @override

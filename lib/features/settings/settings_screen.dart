@@ -3,6 +3,7 @@ import 'package:routelog_project/features/settings/widgets/widgets.dart';
 import 'package:routelog_project/features/routes/route_import_sheet.dart';
 import 'package:routelog_project/features/routes/route_export_sheet.dart';
 import 'package:routelog_project/core/theme/theme_controller.dart';
+import 'package:routelog_project/features/settings/state/settings_controller.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,17 +16,28 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   String _distanceUnit = "km";
 
+  @override
+  void initState() {
+    super.initState();
+    // 설정 로드 (비동기지만 화면 진입 시점에 최신값 반영)
+    SettingsController.instance.load();
+  }
+
   void _snack(String msg) =>
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 
   String _themeModeLabel(ThemeMode m) {
     switch (m) {
-      case ThemeMode.system:
-        return "시스템";
-      case ThemeMode.light:
-        return "라이트";
-      case ThemeMode.dark:
-        return "다크";
+      case ThemeMode.system: return "시스템";
+      case ThemeMode.light:  return "라이트";
+      case ThemeMode.dark:   return "다크";
+    }
+  }
+
+  String _accuracyLabel(GpsAccuracyOption a) {
+    switch (a) {
+      case GpsAccuracyOption.high:     return "높음(배터리↑)";
+      case GpsAccuracyOption.balanced: return "보통(배터리↓)";
     }
   }
 
@@ -47,64 +59,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        "테마 모드",
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        tooltip: "닫기",
-                        onPressed: () => Navigator.of(ctx).pop(),
-                        icon: const Icon(Icons.close_rounded),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
+                  _sheetHeader(ctx, "테마 모드"),
                   RadioListTile<ThemeMode>(
-                    value: ThemeMode.system,
-                    groupValue: temp,
-                    title: const Text("시스템"),
+                    value: ThemeMode.system, groupValue: temp, title: const Text("시스템"),
                     onChanged: (v) => setModalState(() => temp = v!),
                   ),
                   RadioListTile<ThemeMode>(
-                    value: ThemeMode.light,
-                    groupValue: temp,
-                    title: const Text("라이트"),
+                    value: ThemeMode.light, groupValue: temp, title: const Text("라이트"),
                     onChanged: (v) => setModalState(() => temp = v!),
                   ),
                   RadioListTile<ThemeMode>(
-                    value: ThemeMode.dark,
-                    groupValue: temp,
-                    title: const Text("다크"),
+                    value: ThemeMode.dark, groupValue: temp, title: const Text("다크"),
                     onChanged: (v) => setModalState(() => temp = v!),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.of(ctx).pop(),
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 12),
-                            child: Text("취소"),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: FilledButton(
-                          onPressed: () => Navigator.of(ctx).pop(temp),
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 12),
-                            child: Text("적용"),
-                          ),
-                        ),
-                      ),
-                    ],
+                  _sheetButtons(
+                    onCancel: () => Navigator.of(ctx).pop(),
+                    onApply:  () => Navigator.of(ctx).pop(temp),
                   ),
                 ],
               ),
@@ -115,8 +85,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
 
     if (result != null && result != ThemeController.instance.mode) {
-      ThemeController.instance.setMode(result); // 전역 테마 즉시 변경
-      if (mounted) setState(() {}); // 트레일링 라벨 갱신
+      ThemeController.instance.setMode(result);
+      if (mounted) setState(() {});
       _snack("테마 모드: ${_themeModeLabel(result)}");
     }
   }
@@ -137,58 +107,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        "거리 단위",
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        tooltip: "닫기",
-                        onPressed: () => Navigator.of(ctx).pop(),
-                        icon: const Icon(Icons.close_rounded),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
+                  _sheetHeader(ctx, "거리 단위"),
                   RadioListTile<String>(
-                    value: "km",
-                    groupValue: temp,
-                    title: const Text("킬로미터 (km)"),
+                    value: "km", groupValue: temp, title: const Text("킬로미터 (km)"),
                     onChanged: (v) => setModalState(() => temp = v!),
                   ),
                   RadioListTile<String>(
-                    value: "mi",
-                    groupValue: temp,
-                    title: const Text("마일 (mi)"),
+                    value: "mi", groupValue: temp, title: const Text("마일 (mi)"),
                     onChanged: (v) => setModalState(() => temp = v!),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.of(ctx).pop(),
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 12),
-                            child: Text("취소"),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: FilledButton(
-                          onPressed: () => Navigator.of(ctx).pop(temp),
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 12),
-                            child: Text("적용"),
-                          ),
-                        ),
-                      ),
-                    ],
+                  _sheetButtons(
+                    onCancel: () => Navigator.of(ctx).pop(),
+                    onApply:  () => Navigator.of(ctx).pop(temp),
                   ),
                 ],
               ),
@@ -204,9 +134,155 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _pickGpsAccuracy() async {
+    final s = SettingsController.instance;
+    var temp = s.accuracy;
+
+    final result = await showModalBottomSheet<GpsAccuracyOption>(
+      context: context,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _sheetHeader(ctx, "GPS 정확도"),
+                RadioListTile<GpsAccuracyOption>(
+                  value: GpsAccuracyOption.high,
+                  groupValue: temp,
+                  title: const Text("높음 (배터리 소모 ↑)"),
+                  subtitle: const Text("실시간 경로 기록에 적합"),
+                  onChanged: (v) => setModalState(() => temp = v!),
+                ),
+                RadioListTile<GpsAccuracyOption>(
+                  value: GpsAccuracyOption.balanced,
+                  groupValue: temp,
+                  title: const Text("보통 (배터리 소모 ↓)"),
+                  subtitle: const Text("도보/조깅 등 일반 상황"),
+                  onChanged: (v) => setModalState(() => temp = v!),
+                ),
+                _sheetButtons(
+                  onCancel: () => Navigator.of(ctx).pop(),
+                  onApply:  () => Navigator.of(ctx).pop(temp),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+
+    if (result != null) {
+      s.setAccuracy(result);
+      if (mounted) setState(() {});
+      _snack("GPS 정확도: ${_accuracyLabel(result)}");
+    }
+  }
+
+  Future<void> _pickAutoPause() async {
+    final s = SettingsController.instance;
+    var enabled = s.autoPause;
+    double speed = s.autoPauseMinSpeedKmh;
+    int sec = s.autoPauseGraceSec;
+
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _sheetHeader(ctx, "자동 일시정지"),
+                SwitchListTile(
+                  title: const Text("자동 일시정지 사용"),
+                  value: enabled,
+                  onChanged: (v) => setModalState(() => enabled = v),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Text("임계 속도"),
+                    const Spacer(),
+                    SizedBox(
+                      width: 120,
+                      child: TextFormField(
+                        initialValue: speed.toStringAsFixed(1),
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        decoration: const InputDecoration(
+                          suffixText: "km/h",
+                          isDense: true,
+                        ),
+                        onChanged: (v) {
+                          final x = double.tryParse(v.replaceAll(',', '.'));
+                          if (x != null) setModalState(() => speed = x.clamp(0.1, 5.0));
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Text("유지 시간"),
+                    const Spacer(),
+                    SizedBox(
+                      width: 120,
+                      child: TextFormField(
+                        initialValue: sec.toString(),
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          suffixText: "초",
+                          isDense: true,
+                        ),
+                        onChanged: (v) {
+                          final x = int.tryParse(v);
+                          if (x != null) setModalState(() => sec = x.clamp(3, 30));
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _sheetButtons(
+                  onCancel: () => Navigator.of(ctx).pop(),
+                  onApply:  () => Navigator.of(ctx).pop({
+                    'enabled': enabled,
+                    'speed': speed,
+                    'sec': sec,
+                  }),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+
+    if (result != null) {
+      s.setAutoPause(result['enabled'] as bool);
+      s.setAutoPauseSpeed((result['speed'] as num).toDouble());
+      s.setAutoPauseGrace(result['sec'] as int);
+      if (mounted) setState(() {});
+      _snack("자동 일시정지: ${s.autoPause ? "ON" : "OFF"} (${s.autoPauseMinSpeedKmh.toStringAsFixed(1)}km/h · ${s.autoPauseGraceSec}s)");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final themeMode = ThemeController.instance.mode; // 현재 모드
+    final themeMode = ThemeController.instance.mode;
+    final s = SettingsController.instance;
 
     return Scaffold(
       appBar: AppBar(title: const Text("설정")),
@@ -219,10 +295,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             leading: Icons.brightness_6_rounded,
             title: "테마 모드",
             subtitle: "시스템/라이트/다크 중 선택",
-            trailing: Text(
-              _themeModeLabel(themeMode),
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
+            trailing: Text(_themeModeLabel(themeMode), style: Theme.of(context).textTheme.labelLarge),
             onTap: _pickThemeMode,
           ),
           const SizedBox(height: 8),
@@ -230,12 +303,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
             leading: Icons.straighten_rounded,
             title: "거리 단위",
             subtitle: "러닝/루트의 거리 표기 단위",
-            trailing: Text(
-              _distanceUnit.toUpperCase(),
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
+            trailing: Text(_distanceUnit.toUpperCase(), style: Theme.of(context).textTheme.labelLarge),
             onTap: _pickDistanceUnit,
           ),
+
+          const SizedBox(height: 24),
+          const SettingsSectionTitle("기록 옵션"),
+          const SizedBox(height: 8),
+          SettingsTile(
+            leading: Icons.gps_fixed_rounded,
+            title: "GPS 정확도",
+            subtitle: "현재: ${_accuracyLabel(s.accuracy)}",
+            onTap: _pickGpsAccuracy,
+          ),
+          const SizedBox(height: 8),
+          SettingsTile(
+            leading: Icons.pause_circle_filled_rounded,
+            title: "자동 일시정지",
+            subtitle: "저속 감지 시 자동으로 일시정지",
+            trailing: Switch(
+              value: s.autoPause,
+              onChanged: (v) {
+                s.setAutoPause(v);
+                setState(() {});
+              },
+            ),
+            onTap: _pickAutoPause,
+          ),
+
           const SizedBox(height: 24),
           const SettingsSectionTitle("백업 & 내보내기"),
           const SizedBox(height: 8),
@@ -252,6 +347,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: "GPX/JSON으로 가져오기 (미구현)",
             onTap: () => showRouteImportSheet(context, from: "설정"),
           ),
+
           const SizedBox(height: 24),
           const SettingsSectionTitle("정보"),
           const SizedBox(height: 8),
@@ -274,6 +370,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: "약관 및 개인정보처리방침",
             subtitle: "문서 보기 (미구현)",
             onTap: () => _snack("문서 화면은 나중에 연결"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 공용: 시트 헤더/버튼
+  Widget _sheetHeader(BuildContext ctx, String title) {
+    return Row(
+      children: [
+        Text(title, style: Theme.of(ctx).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+        const Spacer(),
+        IconButton(
+          tooltip: "닫기",
+          onPressed: () => Navigator.of(ctx).pop(),
+          icon: const Icon(Icons.close_rounded),
+        ),
+      ],
+    );
+  }
+
+  Widget _sheetButtons({required VoidCallback onCancel, required VoidCallback onApply}) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: onCancel,
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Text("취소"),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: FilledButton(
+              onPressed: onApply,
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Text("적용"),
+              ),
+            ),
           ),
         ],
       ),
