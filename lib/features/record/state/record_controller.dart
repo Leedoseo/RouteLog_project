@@ -21,12 +21,6 @@ class RecordController extends ChangeNotifier {
   // 위치 구독
   StreamSubscription<Position>? _posSub;
 
-  // 위치 설정
-  final LocationSettings _locSettings = const LocationSettings(
-    accuracy: LocationAccuracy.bestForNavigation,
-    distanceFilter: 3, // 3m 이상 이동 시 업데이트
-  );
-
   RecordController() {
     _stopwatch = Stopwatch();
   }
@@ -45,7 +39,40 @@ class RecordController extends ChangeNotifier {
     return sec / km; // 초/킬로
   }
 
-  // ---- 권한 & 서비스 체크 ----
+  // 플랫폼별 위치 설정 (백그라운드 대응)
+  LocationSettings get _androidSettings => AndroidSettings(
+    accuracy: LocationAccuracy.bestForNavigation,
+    distanceFilter: 3,
+    forceLocationManager: false,
+    intervalDuration: const Duration(seconds: 2),
+    foregroundNotificationConfig: const ForegroundNotificationConfig(
+      notificationTitle: 'RouteLog 기록 중',
+      notificationText: '러닝 경로를 기록하고 있어요.',
+      // channel id/name 파라미터는 geolocator 14.x에 없음 → 기본 채널 사용
+      notificationIcon: AndroidResource(
+        name: 'ic_stat_routelog', // res/drawable/ic_stat_routelog.xml
+        defType: 'drawable',
+      ),
+      enableWakeLock: true,
+      setOngoing: true,
+    ),
+  );
+
+  LocationSettings get _appleSettings => AppleSettings(
+    accuracy: LocationAccuracy.bestForNavigation,
+    distanceFilter: 3,
+    allowBackgroundLocationUpdates: true,
+    showBackgroundLocationIndicator: true, // ← 필드명 수정
+    pauseLocationUpdatesAutomatically: true,
+    activityType: ActivityType.fitness,
+  );
+
+  LocationSettings get _fallbackSettings => const LocationSettings(
+    accuracy: LocationAccuracy.best,
+    distanceFilter: 3,
+  );
+
+  // 권한 & 서비스 체크
   Future<void> initPermission() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -83,14 +110,27 @@ class RecordController extends ChangeNotifier {
     // 기존 구독 해제
     await _posSub?.cancel();
 
-    _posSub = Geolocator.getPositionStream(locationSettings: _locSettings)
+    final locSettings = _resolvePlatformSettings();
+
+    _posSub = Geolocator.getPositionStream(locationSettings: locSettings)
         .listen(_onPosition, onError: (e) {
-      // 필요 시 에러 핸들링
+      // TODO: 필요 시 에러 핸들링
     });
 
     // 1초 틱으로 경과 갱신
     _tick();
     notifyListeners();
+  }
+
+  LocationSettings _resolvePlatformSettings() {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return _androidSettings;
+    } else if (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS) {
+      return _appleSettings;
+    } else {
+      return _fallbackSettings;
+    }
   }
 
   void _tick() {

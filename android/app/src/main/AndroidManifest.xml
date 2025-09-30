@@ -2,13 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.routelog">
 
-    <!-- (필수) 위치 권한(포그라운드) -->
+    <!-- 위치 권한, 백그라운드 권한 -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-
-    <!-- (선택) 백그라운드까지 필요 시 추후 추가
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
-    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <!-- Android 13+에서 알림 표시 허용 (포그라운드 서비스 알림 필요) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
 
     <application
         android:name="${applicationName}"
