@@ -10,6 +10,7 @@ import 'package:routelog_project/features/record/state/record_controller.dart';
 import 'package:routelog_project/core/navigation/app_router.dart';
 import 'package:routelog_project/core/data/repository/repo_registry.dart';
 import 'package:routelog_project/features/record/services/record_saver.dart';
+// PR용 주석 추가
 
 class RecordScreen extends StatelessWidget {
   const RecordScreen({super.key});
