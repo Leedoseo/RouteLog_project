@@ -64,6 +64,6 @@ SPEC CHECKSUMS:
   permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
   shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
 
-PODFILE CHECKSUM: 7d5cf44747b9a5c1872885bcebe4d39edd704b7b
+PODFILE CHECKSUM: bc1cd5c340c9179897cbe5237fa175082cb2ff7a
 
 COCOAPODS: 1.16.2

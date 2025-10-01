@@ -10,6 +10,8 @@ import 'package:routelog_project/features/record/state/record_controller.dart';
 import 'package:routelog_project/core/navigation/app_router.dart';
 import 'package:routelog_project/core/data/repository/repo_registry.dart';
 import 'package:routelog_project/features/record/services/record_saver.dart';
+import 'package:routelog_project/core/data/models/models.dart'; // ✅ RouteLog 등
+
 // PR용 주석 추가
 
 class RecordScreen extends StatelessWidget {
@@ -41,10 +43,16 @@ class RecordScreen extends StatelessWidget {
     }
 
     String paceText(double? secPerKm) {
-      if (secPerKm == null || secPerKm.isNaN || secPerKm.isInfinite) return '-- /km';
+      if (secPerKm == null || secPerKm.isNaN || secPerKm.isInfinite || secPerKm <= 0) return '-- /km';
       final m = secPerKm ~/ 60;
       final s = (secPerKm % 60).round().toString().padLeft(2, '0');
       return "$m'$s\"/km";
+    }
+
+    double progressFrom(Duration elapsed, {int goalMinutes = 40}) {
+      final p = elapsed.inMinutes / goalMinutes;
+      if (p.isNaN || p.isInfinite) return 0;
+      return p.clamp(0, 1).toDouble();
     }
 
     return Scaffold(
@@ -76,6 +84,7 @@ class RecordScreen extends StatelessWidget {
             final durationText = durText(ctrl.elapsed);
             final distanceText = kmText(ctrl.distanceMeters);
             final pace = paceText(ctrl.paceSecPerKm);
+            final progress = progressFrom(ctrl.elapsed);
 
             return Column(
               children: [
@@ -107,7 +116,7 @@ class RecordScreen extends StatelessWidget {
                       ],
                       const SizedBox(height: 8),
                       RecordTimerGaugeCard(
-                        progress: 0,
+                        progress: progress,               // ✅ 게이지 진행률 반영
                         durationText: durationText,
                         distanceText: distanceText,
                         paceText: pace,
@@ -140,9 +149,17 @@ class RecordScreen extends StatelessWidget {
 
                       // 2) 저장
                       final saver = RecordSaver(repo: RepoRegistry.I.routeRepo);
-                      final saved = await saver.saveFromController(ctrl);
+                      RouteLog saved;
+                      try {
+                        saved = await saver.saveFromController(ctrl); // ✅ non-null
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        _snack(context, "저장 실패: $e");
+                        return;
+                      }
 
                       // 3) 완료 시트
+                      if (!context.mounted) return;
                       await showRecordFinishSheet(
                         context,
                         distanceText: distanceText,
@@ -153,6 +170,7 @@ class RecordScreen extends StatelessWidget {
 
                       // 4) 상세로 이동(실제 id)
                       Navigator.pushNamed(context, Routes.routeDetail(saved.id));
+                      // 레포 watch()로 홈은 자동 갱신됨
                     },
                   ),
                 ),

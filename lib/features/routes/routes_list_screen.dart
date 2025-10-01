@@ -5,6 +5,7 @@ import 'package:routelog_project/core/navigation/app_router.dart';
 import 'package:routelog_project/core/utils/notifier_provider.dart';
 import 'package:routelog_project/features/routes/state/routes_controller.dart';
 import 'package:routelog_project/core/data/models/route_log.dart';
+import 'package:routelog_project/core/data/repository/repo_registry.dart';
 
 class RoutesListScreen extends StatelessWidget {
   const RoutesListScreen({super.key});
@@ -54,7 +55,9 @@ class RoutesListScreen extends StatelessWidget {
                 const SizedBox(height: 8),
 
                 if (loading)
-                  ...List.generate(3, (i) => const _SkeletonTile()).expand((e) => [e, const SizedBox(height: 8)]).toList()
+                  ...List.generate(3, (i) => const _SkeletonTile())
+                      .expand((e) => [e, const SizedBox(height: 8)])
+                      .toList()
                 else if (items.isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 32),
@@ -77,25 +80,70 @@ class RoutesListScreen extends StatelessWidget {
       for (int i = 0; i < items.length; i++)
         Padding(
           padding: EdgeInsets.only(top: i == 0 ? 0 : 8),
-          child: RouteListTile(
-            title: items[i].title,
-            meta: _metaText(items[i]),
-            distanceText: _km(items[i].distanceMeters),
-            paceText: items[i].avgPaceSecPerKm == null ? '-' : _pace(items[i].avgPaceSecPerKm!),
-            isFavorited: i == 0,
-            onTap: () => Navigator.pushNamed(context, Routes.routeDetail(items[i].id)),
-            onExport: () => _snack(context, '내보내기(목업)'),
-            onShare: () => _snack(context, '공유(목업)'),
-            onDelete: () => _snack(context, '삭제(목업)'),
-            onToggleFavorite: (fav) => _snack(context, fav ? '즐겨찾기 추가' : '즐겨찾기 해제'),
+          // ───────────────────────────────
+          // 스와이프 삭제(Dismissible) 적용
+          // ───────────────────────────────
+          child: Dismissible(
+            key: ValueKey('routes_${items[i].id}'),
+            direction: DismissDirection.endToStart,
+            background: _dismissBg(context),
+            confirmDismiss: (_) async {
+              final ok = await _confirmDelete(context, items[i].title);
+              if (ok != true) return false;
+
+              final repo = RepoRegistry.I.routeRepo;
+              final backup = items[i];
+              try {
+                await repo.delete(items[i].id);
+                if (!context.mounted) return false;
+
+                // 삭제 후 되돌리기(Undo) 제공
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('루트를 삭제했습니다.'),
+                    action: SnackBarAction(
+                      label: '되돌리기',
+                      onPressed: () async {
+                        await repo.create(backup); // 같은 id로 복원
+                      },
+                    ),
+                  ),
+                );
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('삭제 실패: $e')),
+                  );
+                }
+              }
+              // repo.watch()를 통해 목록이 자동 새로고침되므로 여기서는 false로 원위치
+              return false;
+            },
+            child: RouteListTile(
+              title: items[i].title,
+              meta: _metaText(items[i]),
+              distanceText: _km(items[i].distanceMeters),
+              paceText: items[i].avgPaceSecPerKm == null ? '-' : _pace(items[i].avgPaceSecPerKm!),
+              isFavorited: i == 0,
+              onTap: () => Navigator.pushNamed(context, Routes.routeDetail(items[i].id)),
+              // 아래 3개 액션은 그대로 목업 유지 (원하면 액션시트/실삭제로 교체 가능)
+              onExport: () => _snack(context, '내보내기(목업)'),
+              onShare: () => _snack(context, '공유(목업)'),
+              onDelete: () => _snack(context, '삭제(목업)'),
+              onToggleFavorite: (fav) => _snack(context, fav ? '즐겨찾기 추가' : '즐겨찾기 해제'),
+            ),
           ),
         ),
     ];
   }
 
+  // ───────────────────────────────
+  // 유틸들
+  // ───────────────────────────────
   static String _km(double meters) {
     final km = meters / 1000.0;
     return km >= 10 ? '${km.toStringAsFixed(0)}km' : '${km.toStringAsFixed(2)}km';
+    // 단위 사이 공백을 원하면 ' km'로 변경
   }
 
   static String _pace(double secPerKm) {
@@ -159,6 +207,33 @@ class RoutesListScreen extends StatelessWidget {
 
   void _snack(BuildContext context, String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  Future<bool?> _confirmDelete(BuildContext context, String title) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('삭제하시겠어요?'),
+        content: Text('‘$title’ 루트를 삭제하면 복구할 수 없습니다.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('취소')),
+          FilledButton.tonal(onPressed: () => Navigator.pop(ctx, true), child: const Text('삭제')),
+        ],
+      ),
+    );
+  }
+
+  Widget _dismissBg(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: cs.errorContainer,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(Icons.delete_rounded, color: cs.onErrorContainer),
+    );
   }
 }
 
