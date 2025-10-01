@@ -44,35 +44,109 @@
 
 ---
 
-## 🌗 테마
-- `core/theme` 아래에서 라이트/다크/시스템 모드 지원
-- 공통 radius, 카드/앱바 규칙 등 UI 일관성 유지
+## ✅ Quick Start
+```bash
+# 1) 패키지 설치
+flutter pub get
+
+# 2) iOS 준비
+cd ios && pod install && cd ..
+
+# 3) 실행
+flutter run
+```
 
 ---
 
-## 🧭 내비게이션
-- `core/navigation` 라우터에서 화면 전환 제어
-- 기능별 화면은 `features/<domain>`로 분리
+## 🔑 지도 API 키 & 권한 설정
+> 이미 동작 중이라도 README에 명시해두면 유지보수/심사 대응에 도움 됨.
+
+### iOS — `ios/Runner/Info.plist`
+```xml
+<!-- Google Maps API Key -->
+<key>GMSApiKey</key>
+<string>YOUR_IOS_GOOGLE_MAPS_API_KEY</string>
+
+<!-- 위치 권한 -->
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>현재 위치를 기반으로 경로를 기록하고 지도를 표시합니다.</string>
+<!-- 백그라운드 추적 필요 시 추가 -->
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>앱이 백그라운드에서도 경로 기록을 계속하기 위해 위치 접근이 필요합니다.</string>
+<key>UIBackgroundModes</key>
+<array>
+  <string>location</string>
+</array>
+```
+
+### Android — `android/app/src/main/AndroidManifest.xml`
+```xml
+<manifest ...>
+  <application ...>
+    <!-- Google Maps API Key -->
+    <meta-data
+      android:name="com.google.android.geo.API_KEY"
+      android:value="YOUR_ANDROID_GOOGLE_MAPS_API_KEY"/>
+  </application>
+
+  <!-- 위치 권한 -->
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+  <!-- 백그라운드 추적 필요 시 -->
+  <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+</manifest>
+```
 
 ---
 
-## 🧪 상태/컴포넌트
-- 공통 상태 위젯: 빈 상태, 에러 상태, 스켈레톤 리스트 등
-- 카드/섹션/타일 등 재사용 위젯로 UI 구성 가속
+## 🗃️ 데이터 모델(초안)
+
+**Session**
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| id | String | 세션 ID |
+| startedAt | DateTime | 시작 시각 |
+| endedAt | DateTime? | 종료 시각 |
+| distanceMeters | double | 총 거리 |
+| durationSec | int | 총 시간(초) |
+| avgPace | double | 분/킬로 pace 등 표시용 |
+
+**TrackPoint**
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| sessionId | String | 세션 참조 |
+| lat | double | 위도 |
+| lng | double | 경도 |
+| ts | DateTime | 타임스탬프 |
+| accuracy | double? | 정밀도(선택) |
 
 ---
 
-## 🗺️ 지도 & 기록 (현재 상태)
-- 기록 화면: 지도 표시 + 메트릭 표기 UI 골격
-- 일부 기능은 목업 단계(실데이터 연결 전)
-- Google Maps 사용 중
+## 📱 화면 흐름(요약)
+- **Home** → 요약/퀵액션/최근 루트  
+- **Record** → 현재 위치 + polyline 실시간 경로 기록  
+- **Routes** → 목록/필터/정렬 → 상세(지도/메트릭)  
+- **Stats** → 월별/주간 지표 요약(차트 고도화 예정)  
+- **Settings** → 테마/기타 환경
 
 ---
 
-## 🗂️ 브랜치
+## ⚠️ 심사/권한 가이드(짧게)
+- **iOS**: 백그라운드 위치 사용 시 `UIBackgroundModes: location`과 명확한 목적 문구 필요.  
+- **Android**: `ACCESS_BACKGROUND_LOCATION`은 별도 런타임 동의 플로우 필요(정말 필요한 경우에만).  
+- **문구**: “경로 기록/운동 기록 목적” 명확히 고지.
+
+---
+
+## 🧭 브랜치
 - `main`: 안정 상태
 - `develop`: 작업 기본 브랜치
 - `design`: 디자인 폴리시/마감 전 시각 보정
+
+### 브랜치 네이밍(권장)
+- `feature/record-storage` — 기록 세션 로컬 저장  
+- `feature/stats-charts` — 통계 계산 + 차트  
+- `chore/release-prep` — 스토어용 아트워크/가이드/버전
 
 ---
 
@@ -80,8 +154,8 @@
 - [x] UI 모형/테마/레이아웃 정리
 - [x] 라우트 리스트/상세 기본 골격
 - [x] 기록 화면 기본 인터랙션(시작/정지/종료) UI
-- [ ] 위치 권한/정확도/백그라운드 정책 정리
-- [ ] 지도 SDK 확정(요금/제한 검토) 및 연동
+- [x] 위치 권한/정확도/백그라운드 정책 정리
+- [x] 지도 SDK 확정(요금/제한 검토) 및 연동
 - [ ] 기록 세션 저장/불러오기(로컬 → 백엔드 확장)
 - [ ] 통계 지표 계산/차트 고도화
 - [ ] 테스트/릴리즈 준비
@@ -90,3 +164,10 @@
 
 ## 🙌 기여
 - 개인 프로젝트이므로 외부 기여는 현재 받지 않음(변경될 수 있음).
+
+---
+
+## 🏷️ 배지
+![Flutter](https://img.shields.io/badge/Flutter-3.x-blue)
+![Platform](https://img.shields.io/badge/iOS-13%2B-lightgrey)
+![License](https://img.shields.io/badge/license-Private-lightgrey)
