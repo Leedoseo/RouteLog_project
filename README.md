@@ -29,8 +29,8 @@
 ---
 
 ## 🧩 기술 스택
-- Flutter (Dart) / Material 3
-- iOS 최소 13.0 (CocoaPods 통합 완료: *Flutter*, *shared_preferences_foundation*)
+- ![Flutter](https://img.shields.io/badge/Flutter-3.x-blue) / Material 3
+- ![Platform](https://img.shields.io/badge/iOS-13%2B-lightgrey) / (CocoaPods 통합 완료: *Flutter*, *shared_preferences_foundation*)
 - 현재 **Firebase 제외** 상태 (향후 추가 예정)
 
 ### pubspec 주요 의존성
@@ -41,20 +41,6 @@
 - `path_provider`: ^2.1.5
 - `permission_handler`: ^12.0.1
 - `shared_preferences`: ^2.2.2
-
----
-
-## ✅ Quick Start
-```bash
-# 1) 패키지 설치
-flutter pub get
-
-# 2) iOS 준비
-cd ios && pod install && cd ..
-
-# 3) 실행
-flutter run
-```
 
 ---
 
@@ -168,6 +154,4 @@ flutter run
 ---
 
 ## 🏷️ 배지
-![Flutter](https://img.shields.io/badge/Flutter-3.x-blue)
-![Platform](https://img.shields.io/badge/iOS-13%2B-lightgrey)
-![License](https://img.shields.io/badge/license-Private-lightgrey)
+
