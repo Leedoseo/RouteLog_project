@@ -18,10 +18,11 @@
 ---
 
 🎥 시연 영상
+<!-- HTML5 video: GitHub에서 재생 가능 -->
 
 <video src="docs/img/demo_crf.mp4" controls playsinline style="max-width:100%;height:auto;"></video>
 
-
+< [![Watch the demo](docs/img/final_home.png)](docs/img/demo_crf.mp4)>
 
 ---
 
