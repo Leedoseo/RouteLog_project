@@ -2,15 +2,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.routelog">
 
-    <!-- 위치 권한, 백그라운드 권한 -->
+    <!-- 네트워크/위치 권한 -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+    <!-- 실제로 백그라운드 위치가 필요할 때만 남겨두세요(Play 정책 주의) -->
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
-    <!-- Android 13+에서 알림 표시 허용 (포그라운드 서비스 알림 필요) -->
+    <!-- Android 13+ 알림 권한(포그라운드 서비스 알림 등 필요 시) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-
 
     <application
         android:name="${applicationName}"
@@ -18,10 +20,10 @@
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="false">
 
-        <!-- (필수) Google Maps Android SDK API Key -->
+        <!-- ✅ Google Maps Android SDK API Key (올바른 키) -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="c0527dbed45b3497990ec3fcf3961660f6873f308608d053c572ab9365ffaf2b" />
+            android:value="AIzaSyAwe0p-xsj5-ucvCx1ihvNRCAtSUpew7iQ" />
 
         <activity
             android:name=".MainActivity"
@@ -39,7 +41,7 @@
 
         </activity>
 
-        <!-- Flutter 기본 설정 (기존 값 유지) -->
+        <!-- Flutter 기본 설정 -->
         <meta-data
             android:name="io.flutter.embedding.android.NormalTheme"
             android:resource="@style/NormalTheme" />
