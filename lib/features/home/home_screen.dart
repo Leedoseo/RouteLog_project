@@ -1,20 +1,64 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:routelog_project/core/decoration/app_background.dart';
+import 'package:routelog_project/core/navigation/app_router.dart';
+import 'package:routelog_project/core/data/repository/repo_registry.dart';
+import 'package:routelog_project/core/data/models/route_log.dart';
+
 import 'package:routelog_project/features/home/widgets/home_hero_dashboard.dart';
 import 'package:routelog_project/features/home/widgets/mini_stat.dart';
 import 'package:routelog_project/features/home/widgets/quick_action_button.dart';
 import 'package:routelog_project/features/home/widgets/recent_route_tile.dart';
-import 'package:routelog_project/core/navigation/app_router.dart';
 
-// 기존 direct push용 import 제거:
-// import 'package:routelog_project/features/record/record_screen.dart';
-// import 'package:routelog_project/features/routes/routes_list_screen.dart';
-// import 'package:routelog_project/features/settings/settings_screen.dart';
-// import 'package:routelog_project/features/stats/stats_screen.dart';
-// import 'package:routelog_project/features/routes/route_export_sheet.dart';
-
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  Future<_HomeData>? _future;
+  StreamSubscription? _sub;
+
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+    _sub = RepoRegistry.I.routeRepo.watch().listen((_) => _refresh());
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
+  void _refresh() {
+    setState(() {
+      _future = _load();
+    });
+  }
+
+  Future<_HomeData> _load() async {
+    final repo = RepoRegistry.I.routeRepo;
+    final items = await repo.list(sort: 'date_desc');
+
+    if (items.isEmpty) return const _HomeData.empty();
+
+    final latest = items.first;
+    final totalKm = items.fold<double>(0, (sum, r) => sum + r.distanceKm);
+    final durationMin = latest.movingTime.inMinutes;
+    final progress = (durationMin / 40).clamp(0, 1).toDouble();
+    final recent = items.take(3).toList();
+
+    return _HomeData(
+      latest: latest,
+      totalKm: totalKm,
+      durationMinutes: durationMin,
+      progress: progress,
+      recent: recent,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,100 +69,214 @@ class HomeScreen extends StatelessWidget {
         title: const Text('RouteLog'),
         actions: [
           IconButton(
-            onPressed: () {
-              // 알림 페이지가 있으면 여기서 pushNamed로 연결하면 됨
-              // Navigator.pushNamed(context, Routes.notifications);
-            },
+            onPressed: () {},
             icon: const Icon(Icons.notifications_none_rounded),
           ),
         ],
       ),
       body: AppBackground(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-          children: [
-            const HomeHeroDashboard(durationMinutes: 25, progress: 0.62),
-            const SizedBox(height: 16),
+        child: FutureBuilder<_HomeData>(
+          future: _future,
+          builder: (context, snap) {
+            if (snap.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snap.hasError) {
+              return Center(child: Text('홈 데이터 로드 실패: ${snap.error}'));
+            }
 
-            // ── 오늘의 지표(세 타일 동일폭/고정높이)
-            Row(
-              children: const [
-                Expanded(child: MiniStat(icon: Icons.timer_outlined, label: '세션 시간', value: '00:25:12')),
-                SizedBox(width: 12),
-                Expanded(child: MiniStat(icon: Icons.directions_run_rounded, label: '누적 거리', value: '5.0 km')),
-                SizedBox(width: 12),
-                Expanded(child: MiniStat(icon: Icons.favorite_rounded, label: '평균 심박', value: '148 bpm')),
-              ],
-            ),
-            const SizedBox(height: 16),
+            final data = snap.data ?? const _HomeData.empty();
 
-            // ── 빠른 액션 (Named routes로 전환)
-            Row(
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               children: [
-                Expanded(
-                  child: QuickActionButton(
-                    icon: Icons.play_arrow_rounded,
-                    label: '기록 시작',
-                    onTap: () {
-                      Navigator.pushNamed(context, Routes.record);
-                    },
-                  ),
+                HomeHeroDashboard(
+                  durationMinutes: data.durationMinutes,
+                  progress: data.progress,
+                  distanceKm: data.latest?.distanceKm,
+                  paceSecPerKm: data.latest?.avgPaceSecPerKm,
+                  avgHr: null,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: QuickActionButton(
-                    icon: Icons.search_rounded,
-                    label: '루트 검색',
-                    onTap: () {
-                      // 검색 화면이 따로 있으면 Routes.search로, 현재는 루트 리스트로 이동 원하면 Routes.routes
-                      // 필요에 따라 아래 한 줄을 Routes.search로 바꿔도 됨.
-                      Navigator.pushNamed(context, Routes.routes);
-                    },
-                  ),
+                const SizedBox(height: 16),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: MiniStat(
+                        icon: Icons.timer_outlined,
+                        label: '세션 시간',
+                        value: data.latest != null
+                            ? data.latest!.movingTimeText
+                            : '00:00',
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: MiniStat(
+                        icon: Icons.directions_run_rounded,
+                        label: '누적 거리',
+                        value: '${data.totalKm.toStringAsFixed(data.totalKm >= 10 ? 0 : 1)} km',
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: MiniStat(
+                        icon: Icons.favorite_rounded,
+                        label: '평균 심박',
+                        value: '-',
+                      ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 16),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: QuickActionButton(
+                        icon: Icons.play_arrow_rounded,
+                        label: '기록 시작',
+                        onTap: () async {
+                          await Navigator.pushNamed(context, Routes.record);
+                          _refresh();
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: QuickActionButton(
+                        icon: Icons.search_rounded,
+                        label: '루트 검색',
+                        onTap: () {
+                          Navigator.pushNamed(context, Routes.routes);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                Text('최근 루트', style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 8),
+
+                if (data.recent.isEmpty)
+                  const Text('아직 저장된 루트가 없어요. 기록을 시작해보세요!')
+                else
+                  ...data.recent.indexed.map((e) {
+                    final i = e.$1;
+                    final r = e.$2;
+
+                    return Padding(
+                      padding: EdgeInsets.only(top: i == 0 ? 0 : 8),
+                      child: Dismissible(
+                        key: ValueKey('home_recent_${r.id}'),
+                        direction: DismissDirection.endToStart,
+                        background: _dismissBg(context),
+                        confirmDismiss: (_) async {
+                          final ok = await _confirmDelete(context, r.title);
+                          if (ok != true) return false;
+
+                          final repo = RepoRegistry.I.routeRepo;
+                          final backup = r;
+                          try {
+                            await repo.delete(r.id);
+                            if (!context.mounted) return false;
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text('루트를 삭제했습니다.'),
+                                action: SnackBarAction(
+                                  label: '되돌리기',
+                                  onPressed: () async {
+                                    await repo.create(backup);
+                                  },
+                                ),
+                              ),
+                            );
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('삭제 실패: $e')),
+                              );
+                            }
+                          }
+                          return false; // 스트림으로 새로고침되므로 원위치
+                        },
+                        child: InkWell(
+                          onTap: () => Navigator.pushNamed(context, Routes.routes),
+                          borderRadius: BorderRadius.circular(12),
+                          child: RecentRouteTile(
+                            title: r.title,
+                            meta: '${r.distanceText} · ${r.movingTimeText} · ${r.avgPaceText}',
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
               ],
-            ),
-
-            const SizedBox(height: 24),
-
-            // ── 최근 루트
-            Text('최근 루트', style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-            const SizedBox(height: 8),
-            ...List.generate(3, (i) {
-              return Padding(
-                padding: EdgeInsets.only(top: i == 0 ? 0 : 8),
-                child: RecentRouteTile(
-                  title: '강변 러닝 코스 $i',
-                  meta: '5.0km · 25분 · 5\'15"/km',
-                  onTap: () {
-                    // 실제라면 특정 id로 상세로 가는 게 자연스러움: Navigator.pushNamed(context, Routes.routeDetail(id))
-                    // 지금은 더미라 목록으로 연결 유지
-                    Navigator.pushNamed(context, Routes.routes);
-                  },
-                ),
-              );
-            }),
-          ],
+            );
+          },
         ),
       ),
-
-      // ── 하단 탭 (홈 탭은 NO-OP, 나머지는 Named routes)
       bottomNavigationBar: _HomeBottomBar(
-        onHome: () {
-          // 홈은 현재 화면이므로 아무 것도 하지 않음 (무한 푸시 방지)
-        },
-        onRoutes: () {
-          Navigator.pushNamed(context, Routes.routes);
-        },
-        onStats: () {
-          Navigator.pushNamed(context, Routes.stats);
-        },
-        onSettings: () {
-          Navigator.pushNamed(context, Routes.settings);
-        },
+        onHome: () {},
+        onRoutes: () => Navigator.pushNamed(context, Routes.routes),
+        onStats: () => Navigator.pushNamed(context, Routes.stats),
+        onSettings: () => Navigator.pushNamed(context, Routes.settings),
       ),
     );
   }
+
+  Widget _dismissBg(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: cs.errorContainer,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(Icons.delete_rounded, color: cs.onErrorContainer),
+    );
+  }
+
+  Future<bool?> _confirmDelete(BuildContext context, String title) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('삭제하시겠어요?'),
+        content: Text('‘$title’ 루트를 삭제하면 복구할 수 없습니다.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('취소')),
+          FilledButton.tonal(onPressed: () => Navigator.pop(ctx, true), child: const Text('삭제')),
+        ],
+      ),
+    );
+  }
+}
+
+class _HomeData {
+  final RouteLog? latest;
+  final double totalKm;
+  final int durationMinutes;
+  final double progress;
+  final List<RouteLog> recent;
+
+  const _HomeData({
+    required this.latest,
+    required this.totalKm,
+    required this.durationMinutes,
+    required this.progress,
+    required this.recent,
+  });
+
+  const _HomeData.empty()
+      : latest = null,
+        totalKm = 0,
+        durationMinutes = 0,
+        progress = 0,
+        recent = const [];
 }
 
 class _HomeBottomBar extends StatelessWidget {
@@ -151,9 +309,9 @@ class _HomeBottomBar extends StatelessWidget {
           ),
           child: Row(
             children: [
-              _navItem(context, Icons.home_rounded, '홈', selected: true,  onTap: onHome,    cs: cs, t: t),
+              _navItem(context, Icons.home_rounded, '홈', selected: true, onTap: onHome, cs: cs, t: t),
               _navItem(context, Icons.route_rounded, '루트', selected: false, onTap: onRoutes, cs: cs, t: t),
-              _navItem(context, Icons.query_stats,  '통계', selected: false, onTap: onStats,  cs: cs, t: t),
+              _navItem(context, Icons.query_stats, '통계', selected: false, onTap: onStats, cs: cs, t: t),
               _navItem(context, Icons.settings_rounded, '설정', selected: false, onTap: onSettings, cs: cs, t: t),
             ],
           ),
@@ -188,19 +346,6 @@ class _HomeBottomBar extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-// ── 임시 Export 페이지(없으면 삭제하고 showRouteExportSheet 사용)
-class _RouteExportPageStub extends StatelessWidget {
-  const _RouteExportPageStub();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('내보내기')),
-      body: const Center(child: Text('Export 화면(임시)')),
     );
   }
 }

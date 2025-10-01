@@ -188,7 +188,11 @@ class SearchScreenState extends State<SearchScreen> {
                         title: item.title,
                         subtitle: subtitle,
                         onTap: () => Navigator.pushNamed(context, Routes.routeDetail(item.id)),
-                        onMoreTap: () => showRouteActionsSheet(context),
+                        onMoreTap: () => showRouteActionsSheet(
+                          context,
+                          route: item,                 // 필수 파라미터 전달
+                          routeTitle: item.title,      // (옵션) 헤더 표기용
+                        ),
                       );
                     },
                   ),

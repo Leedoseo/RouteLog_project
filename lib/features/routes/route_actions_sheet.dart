@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:routelog_project/features/routes/edit_note_sheet.dart';
 import 'package:routelog_project/features/routes/route_export_sheet.dart';
+import 'package:routelog_project/core/data/repository/repo_registry.dart';
+import 'package:routelog_project/core/data/models/models.dart';
 
 /// Route 액션 시트
-/// - 공유/GPX를 하나의 "내보내기"로 통합 -> `showRouteExportSheet` 호출
-/// - 메모/태그 편집 시 `showEditNoteSheet`
-/// - 삭제는 확인 다이얼로그 후 스낵바(목업)
+/// - 내보내기(공유/GPX) → `showRouteExportSheet`
+/// - 메모/태그 편집 → `showEditNoteSheet`
+/// - 삭제 → 확인 다이얼로그 후 실제 삭제 + 스낵바 Undo
 Future<void> showRouteActionsSheet(
     BuildContext context, {
-      String? routeTitle,                 // 내보내기 시트 헤더에 표기하고 싶을 때 옵션
-      String? memoText,                   // 편집 시 초기 메모
-      List<String>? availableTags,        // 편집 시 선택 가능한 태그
-      Set<String>? selectedTags,          // 편집 시 처음 선택된 태그
+      required RouteLog route,          // 실제 삭제/복원에 사용
+      String? routeTitle,               // 내보내기 시트 헤더 표기용(옵션)
+      String? memoText,                 // 편집 초기 메모
+      List<String>? availableTags,      // 편집: 선택 가능한 태그
+      Set<String>? selectedTags,        // 편집: 처음 선택된 태그
+      VoidCallback? onDeleted,          // (옵션) 삭제 완료 콜백
     }) {
   void _snack(String msg) =>
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
@@ -26,13 +30,13 @@ Future<void> showRouteActionsSheet(
     builder: (sheetCtx) {
       final cs = Theme.of(sheetCtx).colorScheme;
 
-      // 삭제 확인 다이얼로그
+      // 삭제 확인 → 실제 삭제(+Undo) 처리
       Future<void> _confirmDelete() async {
         final ok = await showDialog<bool>(
           context: sheetCtx,
           builder: (dCtx) => AlertDialog(
             title: const Text('삭제하시겠어요?'),
-            content: const Text('이 루트를 삭제하면 복구할 수 없습니다.'),
+            content: Text('‘${route.title}’ 루트를 삭제하면 복구할 수 없습니다.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dCtx).pop(false),
@@ -47,8 +51,42 @@ Future<void> showRouteActionsSheet(
         );
 
         if (ok == true) {
-          Navigator.of(sheetCtx).pop(); // 시트 닫기
-          _snack('삭제는 나중에 연결');
+          // 시트 먼저 닫기
+          Navigator.of(sheetCtx).pop();
+
+          final repo = RepoRegistry.I.routeRepo;
+          final backup = route; // Undo용 백업 (동일 id로 복원)
+
+          try {
+            await repo.delete(route.id);
+
+            if (!context.mounted) return;
+
+            // Undo 제공
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('루트를 삭제했습니다.'),
+                action: SnackBarAction(
+                  label: '되돌리기',
+                  onPressed: () async {
+                    try {
+                      await repo.create(backup); // 같은 id로 복원
+                    } catch (e) {
+                      if (context.mounted) {
+                        _snack('되돌리기 실패: $e');
+                      }
+                    }
+                  },
+                ),
+              ),
+            );
+
+            // 외부에서 필요하면 후처리
+            onDeleted?.call();
+          } catch (e) {
+            if (!context.mounted) return;
+            _snack('삭제 실패: $e');
+          }
         }
       }
 
@@ -76,11 +114,10 @@ Future<void> showRouteActionsSheet(
             leading: const Icon(Icons.ios_share_rounded),
             title: const Text('내보내기'),
             onTap: () {
-              // 현재 시트 닫고, 바깥 context로 Export 시트 띄우기
               Navigator.of(sheetCtx).pop();
               Future.microtask(() => showRouteExportSheet(
                 context,
-                routeTitle: routeTitle,
+                routeTitle: routeTitle ?? route.title,
               ));
             },
           ),
@@ -104,7 +141,7 @@ Future<void> showRouteActionsSheet(
           ListTile(
             leading: Icon(Icons.delete_forever_rounded, color: cs.error),
             title: Text('삭제', style: TextStyle(color: cs.error)),
-            onTap: _confirmDelete,
+            onTap: _confirmDelete, // 실제 삭제 연결
           ),
 
           const Divider(height: 1),

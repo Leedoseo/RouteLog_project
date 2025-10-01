@@ -7,7 +7,7 @@ import 'package:routelog_project/core/data/repository/repo_registry.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ThemeController.instance.load();
-  await RepoRegistry.I.init(seedIfEmpty: true); // ← 추가 (최초 한 번 시드하고 싶으면 true)
+  await RepoRegistry.I.init(seedIfEmpty: false); // ← 추가 (최초 한 번 시드하고 싶으면 true)
   runApp(const RouteLogApp());
 }
 

@@ -4,6 +4,7 @@ import 'package:routelog_project/features/stats/widgets/widgets.dart';
 import 'package:routelog_project/core/utils/notifier_provider.dart';
 import 'package:routelog_project/features/stats/state/stats_controller.dart';
 import 'package:routelog_project/core/navigation/app_router.dart';
+import 'package:routelog_project/core/data/repository/repo_registry.dart';
 
 class StatsScreen extends StatelessWidget {
   const StatsScreen({super.key});
@@ -121,10 +122,45 @@ class StatsScreen extends StatelessWidget {
 
                     return Padding(
                       padding: EdgeInsets.only(top: i == 0 ? 0 : 8),
-                      child: InkWell(
-                        onTap: () => Navigator.pushNamed(context, Routes.routeDetail(s.id)),
-                        borderRadius: BorderRadius.circular(12),
-                        child: SplitTile(title: dateStr, meta: meta),
+                      child: Dismissible(
+                        key: ValueKey('stats_session_${s.id}'),
+                        direction: DismissDirection.endToStart,
+                        background: _dismissBg(context),
+                        confirmDismiss: (_) async {
+                          final ok = await _confirmDelete(context, s.title);
+                          if (ok != true) return false;
+
+                          final repo = RepoRegistry.I.routeRepo;
+                          final backup = s;
+                          try {
+                            await repo.delete(s.id);
+                            if (!context.mounted) return false;
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text('루트를 삭제했습니다.'),
+                                action: SnackBarAction(
+                                  label: '되돌리기',
+                                  onPressed: () async {
+                                    await repo.create(backup);
+                                  },
+                                ),
+                              ),
+                            );
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('삭제 실패: $e')),
+                              );
+                            }
+                          }
+                          return false; // watch()로 새로고침되므로 false
+                        },
+                        child: InkWell(
+                          onTap: () => Navigator.pushNamed(context, Routes.routeDetail(s.id)),
+                          borderRadius: BorderRadius.circular(12),
+                          child: SplitTile(title: dateStr, meta: meta),
+                        ),
                       ),
                     );
                   }),
@@ -143,5 +179,32 @@ class StatsScreen extends StatelessWidget {
     if (h > 0) return '${h}h ${m}m';
     if (m > 0) return '${m}m ${s}s';
     return '${s}s';
+  }
+
+  Widget _dismissBg(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: cs.errorContainer,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(Icons.delete_rounded, color: cs.onErrorContainer),
+    );
+  }
+
+  Future<bool?> _confirmDelete(BuildContext context, String title) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('삭제하시겠어요?'),
+        content: Text('‘$title’ 루트를 삭제하면 복구할 수 없습니다.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('취소')),
+          FilledButton.tonal(onPressed: () => Navigator.pop(ctx, true), child: const Text('삭제')),
+        ],
+      ),
+    );
   }
 }

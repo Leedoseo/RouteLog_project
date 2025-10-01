@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:math';
+
 import 'package:routelog_project/core/data/models/models.dart';
 import 'package:routelog_project/core/data/repository/i_route_repository.dart';
 import 'package:routelog_project/core/data/local/json_store.dart';
@@ -7,7 +9,7 @@ import 'package:routelog_project/core/data/local/json_store.dart';
 class FileRouteRepository implements IRouteRepository {
   FileRouteRepository._(this._store);
 
-  /// 파일을 열어 레포 인스턴스를 만든다. (static 이름 충돌 회피 위해 create → open 으로 사용)
+  /// 파일을 열어 레포 인스턴스를 만든다.
   static Future<FileRouteRepository> open({required String filename}) async {
     final docs = await getAppDocsPath();
     final store = JsonStore('$docs/$filename');
@@ -16,11 +18,19 @@ class FileRouteRepository implements IRouteRepository {
 
   final JsonStore _store;
 
+  /// 변경 이벤트 브로드캐스트
+  final StreamController<void> _changes = StreamController<void>.broadcast();
+  @override
+  Stream<void> watch() => _changes.stream;
+  void _emitChange() {
+    if (!_changes.isClosed) {
+      try { _changes.add(null); } catch (_) {}
+    }
+  }
+
   Future<List<RouteLog>> _readAll() async {
     final raw = await _store.readList();
-    return raw
-        .map((e) => RouteLog.fromJson(Map<String, dynamic>.from(e)))
-        .toList();
+    return raw.map((e) => RouteLog.fromJson(Map<String, dynamic>.from(e))).toList();
   }
 
   Future<void> _writeAll(List<RouteLog> items) async {
@@ -81,13 +91,14 @@ class FileRouteRepository implements IRouteRepository {
   Future<RouteLog> create(RouteLog log) async {
     final items = await _readAll();
 
-    // id 비어있거나 충돌 시 새 id 부여
     final needsNewId = log.id.isEmpty || items.any((e) => e.id == log.id);
     final newId = needsNewId ? _genId() : log.id;
 
     final saved = log.copyWith(id: newId);
     items.add(saved);
     await _writeAll(items);
+
+    _emitChange(); // ← 즉시 알림
     return saved;
   }
 
@@ -96,11 +107,13 @@ class FileRouteRepository implements IRouteRepository {
     final items = await _readAll();
     final idx = items.indexWhere((e) => e.id == log.id);
     if (idx == -1) {
-      // 없으면 생성처럼 동작
-      return await create(log);
+      final created = await create(log);
+      return created; // create()에서 이미 알림
     }
     items[idx] = log;
     await _writeAll(items);
+
+    _emitChange(); // ← 즉시 알림
     return log;
   }
 
@@ -109,11 +122,17 @@ class FileRouteRepository implements IRouteRepository {
     final items = await _readAll();
     items.removeWhere((e) => e.id == id);
     await _writeAll(items);
+
+    _emitChange(); // ← 즉시 알림
   }
 
   String _genId() {
     final ts = DateTime.now().millisecondsSinceEpoch;
     final rand = Random().nextInt(100000).toString().padLeft(5, '0');
     return 'rl_${ts}_$rand';
+  }
+
+  void dispose() {
+    _changes.close();
   }
 }
