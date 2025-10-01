@@ -18,9 +18,10 @@
 ---
 
 ## 🎥 시연 영상
-
 <video src="docs/img/demo_crf.mp4" controls playsinline
        style="width:360px; height:auto; border-radius:12px;"></video>
+
+[시연 영상 보러가기](docs/img/demo_crf.mp4)
 
 ---
 
