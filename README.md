@@ -17,10 +17,11 @@
 
 ---
 
-🎥 시연 영상
+## 🎥 시연 영상
 
-<video src="demo.mp4" autoplay muted loop playsinline
-       style="max-width:100%;height:auto;"></video>
+<video src="docs/img/demo_crf.mp4" controls playsinline
+       style="width:360px; height:auto; border-radius:12px;"></video>
+
 ---
 
 ## ✨ 주요 기능
